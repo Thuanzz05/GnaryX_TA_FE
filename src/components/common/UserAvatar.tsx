@@ -1,9 +1,10 @@
 import { cn } from '@/utils/cn'
 
-type AvatarSize = 'sm' | 'md' | 'lg'
+type AvatarSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface UserAvatarProps {
-  name: string
+  name?: string
+  user?: { fullName?: string; avatar?: string } | null
   src?: string
   size?: AvatarSize
   className?: string
@@ -13,6 +14,7 @@ const sizeStyles: Record<AvatarSize, string> = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-9 w-9 text-sm',
   lg: 'h-12 w-12 text-base',
+  xl: 'h-20 w-20 text-2xl',
 }
 
 function getInitials(name: string): string {
@@ -24,12 +26,14 @@ function getInitials(name: string): string {
     .toUpperCase()
 }
 
-export function UserAvatar({ name, src, size = 'md', className }: UserAvatarProps) {
-  if (src) {
+export function UserAvatar({ name, user, src, size = 'md', className }: UserAvatarProps) {
+  const resolvedName = name ?? user?.fullName ?? ''
+  const resolvedSrc = src ?? user?.avatar
+  if (resolvedSrc) {
     return (
       <img
-        src={src}
-        alt={name}
+        src={resolvedSrc}
+        alt={resolvedName}
         className={cn(
           'shrink-0 rounded-full object-cover ring-2 ring-white dark:ring-slate-800',
           sizeStyles[size],
@@ -46,9 +50,9 @@ export function UserAvatar({ name, src, size = 'md', className }: UserAvatarProp
         sizeStyles[size],
         className,
       )}
-      aria-hidden={!name}
+      aria-hidden={!resolvedName}
     >
-      {getInitials(name)}
+      {getInitials(resolvedName)}
     </div>
   )
 }

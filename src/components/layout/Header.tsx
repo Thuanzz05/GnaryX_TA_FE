@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
-import { Menu, Moon, Search, Sun } from 'lucide-react'
+import { Menu, Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { UserAvatar } from '@/components/common/UserAvatar'
 import { NotificationDropdown } from './NotificationDropdown'
+import { GlobalSearch } from './GlobalSearch'
 import type { User } from '@/types'
 
 interface HeaderProps {
@@ -40,16 +41,7 @@ export function Header({
 
       <div className="flex flex-1 items-center justify-end gap-2 sm:justify-between sm:gap-4">
         <div className="relative hidden max-w-md flex-1 sm:block">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
-            aria-hidden="true"
-          />
-          <input
-            type="search"
-            placeholder="Search vocabulary..."
-            className="h-9 w-full rounded-lg border border-border bg-surface-muted pl-9 pr-4 text-sm text-text-primary placeholder:text-text-muted transition-colors focus:border-primary-500 focus:bg-surface-light focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-border-dark dark:bg-slate-800/50 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-primary-400 dark:focus:bg-slate-800"
-            aria-label="Search vocabulary"
-          />
+          <GlobalSearch />
         </div>
 
         <div className="flex items-center gap-1">
