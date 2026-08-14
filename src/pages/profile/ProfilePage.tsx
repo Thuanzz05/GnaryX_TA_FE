@@ -1,19 +1,9 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { BookOpen, Clock, Flame, Settings, Trophy, Zap } from 'lucide-react'
-import { Badge, Button, Card, Heading, Text } from '@/components/common'
-import { UserAvatar } from '@/components/common'
+import { Badge, Button, Card, Heading, Text, UserAvatar } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
-import { MOCK_PROGRESS } from '@/data'
-
-const ACHIEVEMENTS = [
-  { id: '1', icon: '🌱', title: 'First Steps', desc: 'Learned your first 10 words', unlocked: true },
-  { id: '2', icon: '🔥', title: '7-Day Streak', desc: 'Studied 7 days in a row', unlocked: true },
-  { id: '3', icon: '📚', title: '500 Words', desc: 'Learned 500 vocabulary words', unlocked: true },
-  { id: '4', icon: '🏆', title: 'Quiz Master', desc: 'Scored 100% on a quiz', unlocked: true },
-  { id: '5', icon: '⚡', title: '30-Day Streak', desc: 'Studied 30 days in a row', unlocked: false },
-  { id: '6', icon: '🎓', title: '1000 Words', desc: 'Learned 1000 vocabulary words', unlocked: false },
-]
+import { MOCK_PROGRESS, MOCK_ACHIEVEMENTS } from '@/data'
 
 const stats = [
   { label: 'Words Learned', value: '1,248', icon: BookOpen },
@@ -79,15 +69,15 @@ export default function ProfilePage() {
       <Card padding="lg">
         <div className="mb-4 flex items-center justify-between">
           <Heading level="h3">Achievements</Heading>
-          <Badge variant="primary">{ACHIEVEMENTS.filter((a) => a.unlocked).length} / {ACHIEVEMENTS.length}</Badge>
+          <Badge variant="primary">{MOCK_ACHIEVEMENTS.filter((a) => a.unlocked).length} / {MOCK_ACHIEVEMENTS.length}</Badge>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          {ACHIEVEMENTS.map((a, i) => (
+          {MOCK_ACHIEVEMENTS.slice(0, 10).map((a, i) => (
             <motion.div
               key={a.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ delay: i * 0.04 }}
               className={`flex items-center gap-4 rounded-xl border p-4 transition-colors ${
                 a.unlocked
                   ? 'border-border bg-white dark:border-border-dark dark:bg-surface-card-dark'
@@ -95,9 +85,10 @@ export default function ProfilePage() {
               }`}
             >
               <span className="text-3xl" aria-hidden="true">{a.icon}</span>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="font-semibold text-text-primary dark:text-slate-100">{a.title}</p>
-                <p className="text-caption text-text-muted dark:text-slate-500">{a.desc}</p>
+                <p className="text-caption text-text-muted dark:text-slate-500 truncate">{a.description}</p>
+                {a.unlocked && <p className="text-caption text-primary-600 dark:text-primary-400">+{a.xpReward} XP</p>}
               </div>
               {a.unlocked && (
                 <Trophy className="ml-auto h-5 w-5 shrink-0 text-warning-500" aria-hidden="true" />
