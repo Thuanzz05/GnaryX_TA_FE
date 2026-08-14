@@ -23,6 +23,7 @@ const FavoritesPage = lazy(() => import('@/pages/favorites/FavoritesPage'))
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'))
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'))
 const HelpPage = lazy(() => import('@/pages/help/HelpPage'))
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 
 function PageLoader() {
   return (
@@ -208,6 +209,14 @@ export const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  {
+    path: '*',
+    element: (
+      <SuspenseWrapper>
+        <NotFoundPage />
+      </SuspenseWrapper>
+    ),
   },
 ])
 
