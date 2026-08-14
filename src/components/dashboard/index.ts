@@ -1,2 +1,7 @@
-// Dashboard components — Phase 5+
-export {}
+export { DashboardHeader } from './DashboardHeader'
+export { DailyGoalCard } from './DailyGoalCard'
+export { ContinueLearningCard } from './ContinueLearningCard'
+export { TodaysLearningPlan } from './TodaysLearningPlan'
+export { WordOfTheDayCard } from './WordOfTheDayCard'
+export { RecentActivityList } from './RecentActivityList'
+export { DashboardSkeleton } from './DashboardSkeleton'

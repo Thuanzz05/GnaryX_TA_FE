@@ -127,3 +127,47 @@ export interface DailyGoal {
 export interface FavoriteWord extends VocabularyWord {
   savedAt: string
 }
+
+export interface StatTrend {
+  value: string
+  direction: 'up' | 'down' | 'neutral'
+}
+
+export interface DashboardStat {
+  id: string
+  label: string
+  value: string
+  icon: 'book' | 'refresh' | 'flame' | 'clock'
+  trend: StatTrend
+}
+
+export interface LearningPlanItem {
+  id: string
+  title: string
+  description: string
+  icon: 'book-open' | 'refresh-cw' | 'clipboard-check' | 'target'
+  completed: boolean
+  actionLabel: string
+  actionHref: string
+}
+
+export interface ContinueLearning {
+  courseId: string
+  courseTitle: string
+  lessonNumber: number
+  lessonTitle: string
+  progress: number
+  wordsCompleted: number
+  wordsTotal: number
+  color: string
+}
+
+export interface DashboardData {
+  progress: LearningProgress
+  dailyGoal: DailyGoal
+  stats: DashboardStat[]
+  continueLearning: ContinueLearning
+  learningPlan: LearningPlanItem[]
+  wordOfTheDay: VocabularyWord
+  recentActivity: LearningActivity[]
+}

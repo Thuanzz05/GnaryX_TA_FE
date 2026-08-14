@@ -28,3 +28,6 @@ export { Heading, Text, Label } from './Typography'
 export { Logo } from './Logo'
 
 export { UserAvatar } from './UserAvatar'
+
+export { ProgressBar, CircularProgress, StatCard } from './progress'
+export type { ProgressBarProps, CircularProgressProps, StatCardProps } from './progress'
