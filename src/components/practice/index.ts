@@ -1,2 +1,4 @@
-// Practice components — Phase 9+
-export {}
+export { MultipleChoiceExercise } from './MultipleChoiceExercise'
+export { FillInBlankExercise } from './FillInBlankExercise'
+export { MatchingExercise } from './MatchingExercise'
+export { ListeningExercise } from './ListeningExercise'
