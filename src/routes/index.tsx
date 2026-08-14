@@ -1,9 +1,13 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { ToastProvider } from '@/components/common'
-import { AppLayout } from '@/components/layout'
-import { MOCK_USER } from '@/services/userService'
+import { AuthLayout, AppLayout } from '@/components/layout'
+import { AuthProvider } from '@/hooks/useAuth'
+import { GuestRoute, ProtectedRoute } from './guards'
 
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
+const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const DesignSystemPage = lazy(() => import('@/pages/DesignSystemPage'))
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
 const LearnPage = lazy(() => import('@/pages/learn/LearnPage'))
@@ -30,7 +34,7 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
 }
 
 function LayoutRoot() {
-  return <AppLayout user={MOCK_USER} />
+  return <AppLayout />
 }
 
 export const router = createBrowserRouter([
@@ -39,108 +43,151 @@ export const router = createBrowserRouter([
     element: <Navigate to="/dashboard" replace />,
   },
   {
-    element: <LayoutRoot />,
+    element: <GuestRoute />,
     children: [
       {
-        path: '/dashboard',
-        element: (
-          <SuspenseWrapper>
-            <DashboardPage />
-          </SuspenseWrapper>
-        ),
+        element: <AuthLayout />,
+        children: [
+          {
+            path: '/login',
+            element: (
+              <SuspenseWrapper>
+                <LoginPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/register',
+            element: (
+              <SuspenseWrapper>
+                <RegisterPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/forgot-password',
+            element: (
+              <SuspenseWrapper>
+                <ForgotPasswordPage />
+              </SuspenseWrapper>
+            ),
+          },
+        ],
       },
+    ],
+  },
+  {
+    element: <ProtectedRoute />,
+    children: [
       {
-        path: '/learn',
-        element: (
-          <SuspenseWrapper>
-            <LearnPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/vocabulary',
-        element: (
-          <SuspenseWrapper>
-            <VocabularyPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/flashcards',
-        element: (
-          <SuspenseWrapper>
-            <FlashcardsPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/practice',
-        element: (
-          <SuspenseWrapper>
-            <PracticePage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/review',
-        element: (
-          <SuspenseWrapper>
-            <ReviewPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/progress',
-        element: (
-          <SuspenseWrapper>
-            <ProgressPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/favorites',
-        element: (
-          <SuspenseWrapper>
-            <FavoritesPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/profile',
-        element: (
-          <SuspenseWrapper>
-            <ProfilePage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/settings',
-        element: (
-          <SuspenseWrapper>
-            <SettingsPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/help',
-        element: (
-          <SuspenseWrapper>
-            <HelpPage />
-          </SuspenseWrapper>
-        ),
-      },
-      {
-        path: '/design-system',
-        element: (
-          <SuspenseWrapper>
-            <DesignSystemPage />
-          </SuspenseWrapper>
-        ),
+        element: <LayoutRoot />,
+        children: [
+          {
+            path: '/dashboard',
+            element: (
+              <SuspenseWrapper>
+                <DashboardPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/learn',
+            element: (
+              <SuspenseWrapper>
+                <LearnPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/vocabulary',
+            element: (
+              <SuspenseWrapper>
+                <VocabularyPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/flashcards',
+            element: (
+              <SuspenseWrapper>
+                <FlashcardsPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/practice',
+            element: (
+              <SuspenseWrapper>
+                <PracticePage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/review',
+            element: (
+              <SuspenseWrapper>
+                <ReviewPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/progress',
+            element: (
+              <SuspenseWrapper>
+                <ProgressPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/favorites',
+            element: (
+              <SuspenseWrapper>
+                <FavoritesPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/profile',
+            element: (
+              <SuspenseWrapper>
+                <ProfilePage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/settings',
+            element: (
+              <SuspenseWrapper>
+                <SettingsPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/help',
+            element: (
+              <SuspenseWrapper>
+                <HelpPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/design-system',
+            element: (
+              <SuspenseWrapper>
+                <DesignSystemPage />
+              </SuspenseWrapper>
+            ),
+          },
+        ],
       },
     ],
   },
 ])
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
-  return <ToastProvider>{children}</ToastProvider>
+  return (
+    <AuthProvider>
+      <ToastProvider>{children}</ToastProvider>
+    </AuthProvider>
+  )
 }

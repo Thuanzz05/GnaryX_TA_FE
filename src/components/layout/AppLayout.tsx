@@ -4,12 +4,8 @@ import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { MobileNav } from './MobileNav'
 import { bottomNavItems, mainNavItems } from '@/constants/navigation'
+import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
-import type { User } from '@/types'
-
-interface AppLayoutProps {
-  user: User
-}
 
 const pageTitles: Record<string, string> = {
   '/help': 'Help',
@@ -26,10 +22,13 @@ function getPageTitle(pathname: string): string | undefined {
   return match?.label
 }
 
-export function AppLayout({ user }: AppLayoutProps) {
+export function AppLayout() {
+  const { user } = useAuth()
   const { pathname } = useLocation()
   const { isDark, toggleTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  if (!user) return null
 
   const pageTitle = useMemo(() => getPageTitle(pathname), [pathname])
 

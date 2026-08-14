@@ -1,2 +1,3 @@
-// Auth pages — Phase 4+
-export {}
+export { default as LoginPage } from './LoginPage'
+export { default as RegisterPage } from './RegisterPage'
+export { default as ForgotPasswordPage } from './ForgotPasswordPage'

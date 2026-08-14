@@ -146,13 +146,15 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 Textarea.displayName = 'Textarea'
 
 export interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string
+  label?: ReactNode
   description?: string
 }
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ label, description, className, id, ...props }, ref) => {
-    const checkboxId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
+    const checkboxId =
+      id ??
+      (typeof label === 'string' ? label.toLowerCase().replace(/\s+/g, '-') : undefined)
 
     return (
       <div className="flex items-start gap-3">
