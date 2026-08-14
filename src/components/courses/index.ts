@@ -1,2 +1,1 @@
-// Course components — Phase 7+
-export {}
+export { CourseCard } from './CourseCard'

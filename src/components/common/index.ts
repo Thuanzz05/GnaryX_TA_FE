@@ -31,3 +31,6 @@ export { UserAvatar } from './UserAvatar'
 
 export { ProgressBar, CircularProgress, StatCard } from './progress'
 export type { ProgressBarProps, CircularProgressProps, StatCardProps } from './progress'
+
+export { Tabs } from './Tabs'
+export type { Tab } from './Tabs'

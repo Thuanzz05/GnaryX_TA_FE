@@ -7,3 +7,5 @@ export {
   MOCK_RECENT_ACTIVITY,
   WORD_OF_THE_DAY,
 } from './mockDashboard'
+
+export { MOCK_COURSES, MOCK_LESSONS } from './mockCourses'

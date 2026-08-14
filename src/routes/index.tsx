@@ -11,6 +11,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const DesignSystemPage = lazy(() => import('@/pages/DesignSystemPage'))
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
 const LearnPage = lazy(() => import('@/pages/learn/LearnPage'))
+const CourseDetailPage = lazy(() => import('@/pages/learn/CourseDetailPage'))
 const VocabularyPage = lazy(() => import('@/pages/vocabulary/VocabularyPage'))
 const FlashcardsPage = lazy(() => import('@/pages/flashcards/FlashcardsPage'))
 const PracticePage = lazy(() => import('@/pages/practice/PracticePage'))
@@ -95,6 +96,14 @@ export const router = createBrowserRouter([
             element: (
               <SuspenseWrapper>
                 <LearnPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/learn/:courseId',
+            element: (
+              <SuspenseWrapper>
+                <CourseDetailPage />
               </SuspenseWrapper>
             ),
           },
