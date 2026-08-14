@@ -1,0 +1,137 @@
+/* Hallmark · genre: modern-minimal · design-system: design.md · designed-as-app
+ * pre-emit critique: P4 H5 E4 S5 R5 V4
+ * theme: custom (vibe: "warm teal, grounded, educational" · paper oklch(98.5% 0.004 200)
+ *   accent oklch(52% 0.155 175) teal · Space Grotesk + Geist)
+ */
+
+:root {
+  /* ── Colour: paper ─────────────────────────────────── */
+  --color-paper:         oklch(98.5% 0.004 200);
+  --color-paper-2:       oklch(96%   0.006 200);
+  --color-paper-3:       oklch(93.5% 0.008 200);
+
+  /* ── Colour: ink ───────────────────────────────────── */
+  --color-ink:           oklch(18%   0.012 220);
+  --color-ink-2:         oklch(45%   0.010 220);
+  --color-ink-3:         oklch(62%   0.008 220);
+
+  /* ── Colour: surfaces ──────────────────────────────── */
+  --color-rule:          oklch(88%   0.006 200);
+  --color-sidebar:       oklch(99%   0.003 200);
+
+  /* ── Colour: accent ────────────────────────────────── */
+  --color-accent:        oklch(52%   0.155 175);
+  --color-accent-hover:  oklch(46%   0.145 175);
+  --color-accent-subtle: oklch(94%   0.025 175);
+  --color-accent-ink:    oklch(99%   0.005 175);
+  --color-focus:         oklch(58%   0.16  175);
+
+  /* ── Colour: status ────────────────────────────────── */
+  --color-success:       oklch(60%   0.16  145);
+  --color-success-subtle: oklch(94%  0.03  145);
+  --color-warning:       oklch(72%   0.16   75);
+  --color-warning-subtle: oklch(95%  0.03   75);
+  --color-error:         oklch(55%   0.18   25);
+  --color-error-subtle:  oklch(95%   0.03   25);
+
+  /* ── Typography ────────────────────────────────────── */
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* ── Type scale (major third 1.25) ─────────────────── */
+  --text-xs:       0.75rem;
+  --text-sm:       0.875rem;
+  --text-base:     1rem;
+  --text-md:       1.125rem;
+  --text-lg:       1.375rem;
+  --text-xl:       1.75rem;
+  --text-2xl:      2.25rem;
+  --text-3xl:      2.75rem;
+  --text-display:  clamp(2.25rem, 4vw + 0.5rem, 3.5rem);
+
+  /* ── Spacing (4pt base) ────────────────────────────── */
+  --space-3xs:  0.125rem;
+  --space-2xs:  0.25rem;
+  --space-xs:   0.5rem;
+  --space-sm:   0.75rem;
+  --space-md:   1rem;
+  --space-lg:   1.5rem;
+  --space-xl:   2.5rem;
+  --space-2xl:  4rem;
+  --space-3xl:  6rem;
+
+  /* ── Motion ────────────────────────────────────────── */
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:      cubic-bezier(0.7,  0, 0.84, 0);
+  --ease-in-out:  cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro:    120ms;
+  --dur-short:    220ms;
+  --dur-long:     350ms;
+
+  /* ── Surfaces ──────────────────────────────────────── */
+  --radius-xs:     4px;
+  --radius-sm:     6px;
+  --radius-card:   10px;
+  --radius-lg:     14px;
+  --radius-pill:   9999px;
+  --radius-button: 6px;
+  --radius-input:  8px;
+  --radius-badge:  9999px;
+
+  /* ── Shadows ───────────────────────────────────────── */
+  --shadow-xs:     0 1px 2px oklch(20% 0.01 200 / 0.04);
+  --shadow-card:   0 1px 3px oklch(20% 0.01 200 / 0.06), 0 1px 2px oklch(20% 0.01 200 / 0.04);
+  --shadow-raised: 0 4px 12px oklch(20% 0.01 200 / 0.08);
+  --shadow-modal:  0 24px 48px oklch(20% 0.01 200 / 0.16);
+
+  /* ── Z-index scale ─────────────────────────────────── */
+  --z-base:      1;
+  --z-raised:    10;
+  --z-dropdown:  100;
+  --z-sticky:    200;
+  --z-modal:     400;
+  --z-toast:     500;
+  --z-tooltip:   600;
+}
+
+/* ── Dark mode ─────────────────────────────────────────── */
+.dark {
+  --color-paper:         oklch(14%   0.008 200);
+  --color-paper-2:       oklch(18%   0.010 200);
+  --color-paper-3:       oklch(22%   0.012 200);
+  --color-sidebar:       oklch(12%   0.006 200);
+
+  --color-ink:           oklch(94%   0.006 200);
+  --color-ink-2:         oklch(72%   0.008 200);
+  --color-ink-3:         oklch(52%   0.006 200);
+
+  --color-rule:          oklch(26%   0.008 200);
+
+  --color-accent:        oklch(62%   0.14  175);
+  --color-accent-hover:  oklch(68%   0.12  175);
+  --color-accent-subtle: oklch(22%   0.025 175);
+  --color-accent-ink:    oklch(99%   0.005 175);
+  --color-focus:         oklch(62%   0.14  175);
+
+  --color-success:       oklch(68%   0.14  145);
+  --color-success-subtle: oklch(20%  0.02  145);
+  --color-warning:       oklch(76%   0.14   75);
+  --color-warning-subtle: oklch(22%  0.02   75);
+  --color-error:         oklch(62%   0.16   25);
+  --color-error-subtle:  oklch(20%   0.02   25);
+
+  --shadow-xs:     0 1px 2px oklch(0% 0 0 / 0.2);
+  --shadow-card:   0 1px 3px oklch(0% 0 0 / 0.3), 0 1px 2px oklch(0% 0 0 / 0.2);
+  --shadow-raised: 0 4px 12px oklch(0% 0 0 / 0.4);
+  --shadow-modal:  0 24px 48px oklch(0% 0 0 / 0.5);
+}
+
+/* ── Reduced motion ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+  }
+}

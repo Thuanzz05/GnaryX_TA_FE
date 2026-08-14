@@ -40,26 +40,32 @@ function NavLink({
       aria-current={active ? 'page' : undefined}
       title={collapsed ? item.label : undefined}
       className={cn(
-        'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+        'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[0.8125rem] font-medium transition-all',
+        'duration-[var(--dur-short)]',
         active
-          ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-          : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+          ? 'bg-accent-subtle text-accent'
+          : 'text-ink-2 hover:bg-paper-3 hover:text-ink',
         collapsed && 'justify-center px-2',
       )}
     >
+      {/* Active indicator — left border accent */}
+      {active && (
+        <motion.span
+          layoutId="sidebar-active"
+          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent"
+          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+        />
+      )}
       <Icon
         className={cn(
-          'h-5 w-5 shrink-0',
+          'h-[18px] w-[18px] shrink-0 transition-colors',
           active
-            ? 'text-primary-600 dark:text-primary-400'
-            : 'text-text-muted group-hover:text-text-secondary dark:text-slate-500 dark:group-hover:text-slate-300',
+            ? 'text-accent'
+            : 'text-ink-3 group-hover:text-ink-2',
         )}
         aria-hidden="true"
       />
       {!collapsed && <span>{item.label}</span>}
-      {active && !collapsed && (
-        <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />
-      )}
     </Link>
   )
 }
@@ -82,15 +88,26 @@ export function Sidebar({ user, mobileOpen = false, onMobileClose, collapsed = f
     <aside
       ref={sidebarRef}
       className={cn(
-        'flex h-full flex-col border-r border-border bg-surface-light dark:border-border-dark dark:bg-surface-card-dark',
-        collapsed ? 'w-[72px]' : 'w-64',
+        'flex h-full flex-col bg-sidebar border-r border-rule',
+        collapsed ? 'w-[68px]' : 'w-[260px]',
       )}
     >
-      <div className={cn('border-b border-border px-4 py-5 dark:border-border-dark', collapsed && 'px-2')}>
+      {/* Logo area — tighter, cleaner */}
+      <div className={cn(
+        'flex items-center border-b border-rule px-5 py-4',
+        collapsed && 'justify-center px-2',
+      )}>
         <Logo size={collapsed ? 'sm' : 'md'} showSubtitle={!collapsed} asLink />
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4" aria-label="Main navigation">
+      {/* Main navigation */}
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3" aria-label="Main navigation">
+        <p className={cn(
+          'mb-2 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3',
+          collapsed && 'sr-only',
+        )}>
+          Menu
+        </p>
         {mainNavItems.map((item) => (
           <NavLink
             key={item.href}
@@ -102,7 +119,14 @@ export function Sidebar({ user, mobileOpen = false, onMobileClose, collapsed = f
         ))}
       </nav>
 
-      <div className="space-y-1 border-t border-border px-3 py-4 dark:border-border-dark">
+      {/* Bottom section */}
+      <div className="border-t border-rule px-3 py-3">
+        <p className={cn(
+          'mb-2 px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3',
+          collapsed && 'sr-only',
+        )}>
+          Account
+        </p>
         {bottomNavItems.map((item) => (
           <NavLink
             key={item.href}
@@ -113,21 +137,23 @@ export function Sidebar({ user, mobileOpen = false, onMobileClose, collapsed = f
           />
         ))}
 
+        {/* User profile link */}
         <Link
           to="/profile"
           onClick={onMobileClose}
           className={cn(
-            'mt-2 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-muted dark:hover:bg-slate-800',
-            collapsed && 'justify-center px-2',
+            'mt-3 flex items-center gap-3 rounded-lg border border-rule px-3 py-2.5 transition-colors',
+            'hover:bg-paper-3',
+            collapsed && 'justify-center border-0 px-2',
           )}
         >
           <UserAvatar name={user.fullName} src={user.avatar} size="sm" />
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-text-primary dark:text-slate-100">
+              <p className="truncate text-[0.8125rem] font-semibold text-ink">
                 {user.fullName}
               </p>
-              <p className="truncate text-xs text-text-muted dark:text-slate-400">
+              <p className="truncate text-[0.6875rem] text-ink-3">
                 Level {user.level}
               </p>
             </div>
@@ -151,7 +177,7 @@ export function Sidebar({ user, mobileOpen = false, onMobileClose, collapsed = f
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+              className="fixed inset-0 z-40 bg-ink/20 backdrop-blur-[2px] lg:hidden"
               onClick={onMobileClose}
               aria-hidden="true"
             />
