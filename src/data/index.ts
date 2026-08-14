@@ -9,3 +9,5 @@ export {
 } from './mockDashboard'
 
 export { MOCK_COURSES, MOCK_LESSONS } from './mockCourses'
+
+export { MOCK_VOCABULARY } from './mockVocabulary'

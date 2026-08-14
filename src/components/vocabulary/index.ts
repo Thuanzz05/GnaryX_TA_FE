@@ -1,2 +1,2 @@
-// Vocabulary components — Phase 6+
-export {}
+export { VocabularyListItem } from './VocabularyListItem'
+export { VocabularyFilters } from './VocabularyFilters'
