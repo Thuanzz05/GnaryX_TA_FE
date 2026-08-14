@@ -1,6 +1,8 @@
-# GnaryX_TA_FE — LexiLearn
+# GnaryX_TA_FE — GnaryLex
 
 Modern English vocabulary learning platform (Frontend).
+
+**GnaryLex** — *English Vocabulary*
 
 ## Tech Stack
 
@@ -42,7 +44,7 @@ src/
 ## Implementation Phases
 
 - [x] Phase 1: Project setup
-- [ ] Phase 2: Global design system
+- [x] Phase 2: Global design system
 - [ ] Phase 3: Layout (Sidebar, Header)
 - [ ] Phase 4: Authentication
 - [ ] Phase 5+: Feature pages

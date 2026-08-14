@@ -1,11 +1,12 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { ToastProvider } from '@/components/common'
 
-const SetupPage = lazy(() => import('@/pages/SetupPage'))
+const DesignSystemPage = lazy(() => import('@/pages/DesignSystemPage'))
 
 function PageLoader() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface-muted">
+    <div className="flex min-h-screen items-center justify-center bg-surface-muted dark:bg-surface-dark">
       <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" />
     </div>
   )
@@ -24,8 +25,12 @@ export const router = createBrowserRouter([
     path: '/dashboard',
     element: (
       <SuspenseWrapper>
-        <SetupPage />
+        <DesignSystemPage />
       </SuspenseWrapper>
     ),
   },
 ])
+
+export function AppProviders({ children }: { children: React.ReactNode }) {
+  return <ToastProvider>{children}</ToastProvider>
+}
