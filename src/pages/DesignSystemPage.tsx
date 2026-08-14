@@ -3,10 +3,8 @@ import { motion } from 'framer-motion'
 import {
   Heart,
   Mail,
-  Moon,
   Search,
   Sparkles,
-  Sun,
   Volume2,
 } from 'lucide-react'
 import { BRAND } from '@/constants/brand'
@@ -33,18 +31,9 @@ import {
 export default function DesignSystemPage() {
   const { toast } = useToast()
   const [modalOpen, setModalOpen] = useState(false)
-  const [isDark, setIsDark] = useState(false)
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
-
-  const toggleTheme = () => {
-    setIsDark((prev) => {
-      const next = !prev
-      document.documentElement.classList.toggle('dark', next)
-      return next
-    })
-  }
 
   const handleValidateEmail = () => {
     if (!email.includes('@')) {
@@ -61,31 +50,21 @@ export default function DesignSystemPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-muted px-4 py-10 dark:bg-surface-dark">
-      <div className="mx-auto max-w-5xl space-y-10">
+    <div className="mx-auto max-w-5xl space-y-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-2"
         >
-          <div>
-            <Badge variant="primary" className="mb-3">
-              <Sparkles className="mr-1 h-3 w-3" />
-              Phase 2 Complete
-            </Badge>
-            <Logo size="lg" />
-            <Text variant="muted" className="mt-2">
-              Global Design System — {BRAND.description}
-            </Text>
-          </div>
-          <Button
-            variant="outline"
-            leftIcon={isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            onClick={toggleTheme}
-          >
-            {isDark ? 'Light Mode' : 'Dark Mode'}
-          </Button>
+          <Badge variant="primary" className="w-fit">
+            <Sparkles className="mr-1 h-3 w-3" />
+            Design System
+          </Badge>
+          <Logo size="lg" />
+          <Text variant="muted">
+            Global Design System — {BRAND.description}
+          </Text>
         </motion.div>
 
         {/* Typography */}
@@ -332,10 +311,9 @@ export default function DesignSystemPage() {
           </Text>
         </Modal>
 
-        <Text variant="caption" className="text-center block">
-          Phase 3 — Layout (Sidebar, Header, Navigation) coming next.
+        <Text variant="caption" className="block text-center">
+          Phase 2 — Global Design System reference page.
         </Text>
-      </div>
     </div>
   )
 }

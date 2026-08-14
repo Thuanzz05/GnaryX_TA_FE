@@ -26,3 +26,5 @@ export type { ToastData, ToastType } from './Toast'
 export { Heading, Text, Label } from './Typography'
 
 export { Logo } from './Logo'
+
+export { UserAvatar } from './UserAvatar'

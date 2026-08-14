@@ -45,7 +45,7 @@ src/
 
 - [x] Phase 1: Project setup
 - [x] Phase 2: Global design system
-- [ ] Phase 3: Layout (Sidebar, Header)
+- [x] Phase 3: Layout (Sidebar, Header, Navigation)
 - [ ] Phase 4: Authentication
 - [ ] Phase 5+: Feature pages
 

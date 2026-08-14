@@ -1,2 +1,5 @@
-// Layout components — Phase 3+
-export {}
+export { AppLayout } from './AppLayout'
+export { Header } from './Header'
+export { MobileNav } from './MobileNav'
+export { NotificationDropdown } from './NotificationDropdown'
+export { Sidebar } from './Sidebar'

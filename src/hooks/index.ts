@@ -1,2 +1,1 @@
-// Custom hooks — upcoming phases
-export {}
+export { useTheme } from './useTheme'

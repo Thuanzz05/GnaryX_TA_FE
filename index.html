@@ -17,6 +17,16 @@
     <title>GnaryLex — English Vocabulary</title>
   </head>
   <body>
+    <script>
+      ;(() => {
+        const stored = localStorage.getItem('gnarylex-theme')
+        const mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
+        const isDark =
+          mode === 'dark' ||
+          (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (isDark) document.documentElement.classList.add('dark')
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
