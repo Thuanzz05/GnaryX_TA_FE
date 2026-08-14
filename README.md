@@ -69,6 +69,23 @@ src/
 - ✅ Loading & error states
 - ✅ Fully responsive design
 
+### Learn & Courses
+- ✅ Course discovery page with search
+- ✅ Category tabs (All, Beginner, Intermediate, Advanced, IELTS, TOEIC, Business, Academic, Daily English, Travel, Technology)
+- ✅ 10 polished course cards with:
+  - Icon, title, description
+  - Level badge
+  - Lesson count & word count
+  - Progress bar
+  - Continue/Start button
+- ✅ Course detail page with:
+  - Course overview
+  - Overall progress
+  - Complete lesson list
+  - Lesson status (Completed, In Progress, Locked)
+  - Individual lesson progress
+  - Action buttons per lesson
+
 ### Layout & Design
 - ✅ Professional sidebar navigation
 - ✅ Responsive header with notifications
@@ -84,7 +101,8 @@ src/
 - [x] Phase 3: Layout (Sidebar, Header, Navigation)
 - [x] Phase 4: Authentication (Login, Register, Forgot Password)
 - [x] Phase 5: Dashboard (Daily Goals, Stats, Learning Hub)
-- [ ] Phase 6+: Vocabulary, Flashcards, Practice, Quiz, Progress
+- [x] Phase 6: Learn Page (Course Discovery, Category Tabs, Course Details, Lessons)
+- [ ] Phase 7+: Vocabulary, Flashcards, Practice, Quiz, Progress
 
 ## License
 
