@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { MobileNav } from './MobileNav'
+import { MobileSearchSheet } from './MobileSearchSheet'
 import { bottomNavItems, mainNavItems } from '@/constants/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
@@ -27,6 +28,7 @@ export function AppLayout() {
   const { pathname } = useLocation()
   const { isDark, toggleTheme } = useTheme()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   if (!user) return null
 
@@ -45,6 +47,7 @@ export function AppLayout() {
           user={user}
           title={pageTitle}
           onMenuClick={() => setSidebarOpen(true)}
+          onSearchClick={() => setSearchOpen(true)}
           isDark={isDark}
           onToggleTheme={toggleTheme}
         />
@@ -55,6 +58,7 @@ export function AppLayout() {
       </div>
 
       <MobileNav onMoreClick={() => setSidebarOpen(true)} />
+      <MobileSearchSheet open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   )
 }

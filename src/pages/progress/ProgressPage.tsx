@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import { BookOpen, Clock, Flame, TrendingUp, Trophy, Zap } from 'lucide-react'
-import { Badge, Card, Heading, ProgressBar, Text } from '@/components/common'
-import { MOCK_PROGRESS } from '@/data'
+import { Badge, Button, Card, Heading, ProgressBar, Text } from '@/components/common'
+import { MOCK_PROGRESS, MOCK_ACHIEVEMENTS } from '@/data'
 
 const wordsData = [
   { day: 'Mon', words: 12 }, { day: 'Tue', words: 18 },
@@ -20,6 +22,16 @@ const studyTimeData = [
   { day: 'Fri', minutes: 35 }, { day: 'Sat', minutes: 60 },
   { day: 'Sun', minutes: 45 },
 ]
+
+const quizData = [
+  { week: 'Wk 1', score: 65 }, { week: 'Wk 2', score: 72 },
+  { week: 'Wk 3', score: 68 }, { week: 'Wk 4', score: 80 },
+  { week: 'Wk 5', score: 85 }, { week: 'Wk 6', score: 90 },
+]
+
+const XP_PER_LEVEL = 500
+const currentLevelXP = MOCK_PROGRESS.xp % XP_PER_LEVEL
+const xpProgress = Math.round((currentLevelXP / XP_PER_LEVEL) * 100)
 
 const levelData = [
   { name: 'A1', value: 100, color: '#22c55e' },
@@ -163,6 +175,102 @@ export default function ProgressPage() {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
+        </div>
+      </Card>
+
+      {/* Quiz performance */}
+      <Card padding="lg">
+        <Heading level="h3" className="mb-4">Quiz Performance</Heading>
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={quizData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis dataKey="week" tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} />
+            <Tooltip formatter={(v) => [`${v}%`, 'Score']} />
+            <Line
+              type="monotone"
+              dataKey="score"
+              stroke="#8b5cf6"
+              strokeWidth={2.5}
+              dot={{ r: 4, fill: '#8b5cf6' }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </Card>
+
+      {/* XP & Level */}
+      <Card padding="lg" className="border-primary-200 bg-gradient-to-br from-primary-50 to-white dark:border-primary-800/40 dark:from-primary-950/30 dark:to-surface-card-dark">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary-100 dark:bg-primary-900/40">
+              <Zap className="h-8 w-8 text-primary-600 dark:text-primary-400" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-caption font-semibold uppercase tracking-wide text-text-muted dark:text-slate-500">
+                Current Level
+              </p>
+              <p className="text-heading-2 text-text-primary dark:text-slate-100">
+                Level {MOCK_PROGRESS.level}
+              </p>
+              <p className="text-body-sm text-text-secondary dark:text-slate-400">
+                {currentLevelXP} / {XP_PER_LEVEL} XP to next level
+              </p>
+            </div>
+          </div>
+          <div className="flex-1 sm:max-w-xs">
+            <div className="mb-2 flex items-center justify-between text-caption">
+              <span className="text-text-muted dark:text-slate-500">Level {MOCK_PROGRESS.level}</span>
+              <span className="font-semibold text-primary-600 dark:text-primary-400">{xpProgress}%</span>
+            </div>
+            <ProgressBar value={xpProgress} />
+            <p className="mt-2 text-caption text-text-muted dark:text-slate-500">
+              Total XP: <span className="font-semibold text-text-primary dark:text-slate-200">{MOCK_PROGRESS.xp.toLocaleString()}</span>
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Achievements */}
+      <Card padding="lg">
+        <div className="mb-4 flex items-center justify-between">
+          <Heading level="h3">Achievements</Heading>
+          <Badge variant="primary">
+            {MOCK_ACHIEVEMENTS.filter(a => a.unlocked).length} / {MOCK_ACHIEVEMENTS.length}
+          </Badge>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {MOCK_ACHIEVEMENTS.map((ach, i) => (
+            <motion.div
+              key={ach.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.03 }}
+              className={`flex items-center gap-3 rounded-xl border p-3 transition-colors ${
+                ach.unlocked
+                  ? 'border-border bg-white dark:border-border-dark dark:bg-surface-card-dark'
+                  : 'border-border bg-slate-50 opacity-50 dark:border-border-dark dark:bg-slate-800/40'
+              }`}
+            >
+              <span className="text-2xl shrink-0" aria-hidden="true">{ach.icon}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-body-sm font-semibold text-text-primary dark:text-slate-100 truncate">
+                  {ach.title}
+                </p>
+                <p className="text-caption text-text-muted dark:text-slate-500 truncate">
+                  {ach.unlocked ? `+${ach.xpReward} XP` : ach.description}
+                </p>
+              </div>
+              {ach.unlocked && (
+                <Trophy className="h-4 w-4 shrink-0 text-warning-500" aria-hidden="true" />
+              )}
+            </motion.div>
+          ))}
+        </div>
+        <div className="mt-4">
+          <Link to="/profile">
+            <Button variant="outline" size="sm">View all achievements</Button>
+          </Link>
         </div>
       </Card>
     </motion.div>

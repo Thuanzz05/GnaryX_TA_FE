@@ -12,6 +12,7 @@ const DesignSystemPage = lazy(() => import('@/pages/DesignSystemPage'))
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
 const LearnPage = lazy(() => import('@/pages/learn/LearnPage'))
 const CourseDetailPage = lazy(() => import('@/pages/learn/CourseDetailPage'))
+const LessonDetailPage = lazy(() => import('@/pages/learn/LessonDetailPage'))
 const VocabularyPage = lazy(() => import('@/pages/vocabulary/VocabularyPage'))
 const WordDetailPage = lazy(() => import('@/pages/vocabulary/WordDetailPage'))
 const FlashcardsPage = lazy(() => import('@/pages/flashcards/FlashcardsPage'))
@@ -107,6 +108,14 @@ export const router = createBrowserRouter([
             element: (
               <SuspenseWrapper>
                 <CourseDetailPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/learn/:courseId/:lessonId',
+            element: (
+              <SuspenseWrapper>
+                <LessonDetailPage />
               </SuspenseWrapper>
             ),
           },

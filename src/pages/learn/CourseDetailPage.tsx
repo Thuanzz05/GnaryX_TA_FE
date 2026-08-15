@@ -193,7 +193,7 @@ export default function CourseDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <LessonCard lesson={lesson} courseColor={course.color} />
+          <LessonCard lesson={lesson} courseId={courseId!} courseColor={course.color} />
             </motion.div>
           ))
         )}
@@ -204,10 +204,11 @@ export default function CourseDetailPage() {
 
 interface LessonCardProps {
   lesson: Lesson
+  courseId: string
   courseColor: string
 }
 
-function LessonCard({ lesson, courseColor }: LessonCardProps) {
+function LessonCard({ lesson, courseId, courseColor }: LessonCardProps) {
   const Icon =
     lesson.status === 'completed'
       ? CheckCircle2
@@ -297,8 +298,15 @@ function LessonCard({ lesson, courseColor }: LessonCardProps) {
             size="sm"
             disabled={lesson.status === 'locked'}
             rightIcon={<ArrowRight className="h-4 w-4" />}
+            onClick={lesson.status !== 'locked' ? undefined : undefined}
           >
-            {lesson.status === 'completed' ? 'Review' : lesson.status === 'locked' ? 'Locked' : 'Start'}
+            {lesson.status !== 'locked' ? (
+              <Link to={`/learn/${courseId}/${lesson.id}`} className="contents">
+                {lesson.status === 'completed' ? 'Review' : 'Start'}
+              </Link>
+            ) : (
+              'Locked'
+            )}
           </Button>
         </div>
       </CardContent>
