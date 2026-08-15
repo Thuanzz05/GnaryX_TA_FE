@@ -18,6 +18,7 @@ const WordDetailPage = lazy(() => import('@/pages/vocabulary/WordDetailPage'))
 const FlashcardsPage = lazy(() => import('@/pages/flashcards/FlashcardsPage'))
 const PracticePage = lazy(() => import('@/pages/practice/PracticePage'))
 const QuizPage = lazy(() => import('@/pages/quiz/QuizPage'))
+const QuizResultPage = lazy(() => import('@/pages/quiz/QuizResultPage'))
 const ReviewPage = lazy(() => import('@/pages/review/ReviewPage'))
 const ProgressPage = lazy(() => import('@/pages/progress/ProgressPage'))
 const FavoritesPage = lazy(() => import('@/pages/favorites/FavoritesPage'))
@@ -156,6 +157,14 @@ export const router = createBrowserRouter([
             element: (
               <SuspenseWrapper>
                 <QuizPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/quiz/result',
+            element: (
+              <SuspenseWrapper>
+                <QuizResultPage />
               </SuspenseWrapper>
             ),
           },

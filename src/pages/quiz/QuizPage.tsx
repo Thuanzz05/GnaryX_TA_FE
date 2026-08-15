@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Clock, Target, XCircle } from 'lucide-react'
-import { Badge, Button, Card, Heading, ProgressBar, Text } from '@/components/common'
+import { AlertCircle, CheckCircle2, Target, Timer, X, XCircle } from 'lucide-react'
+import { Button, Card, Heading, ProgressBar, Text } from '@/components/common'
 import { MOCK_VOCABULARY } from '@/data'
 import { cn } from '@/utils/cn'
 
@@ -47,38 +47,61 @@ function useTimer(active: boolean) {
   return { elapsed, formatted }
 }
 
+// 10-minute countdown
+const TIME_LIMIT = 600
+
 export default function QuizPage() {
+  const navigate = useNavigate()
   const [questions] = useState<QuizQuestion[]>(buildQuiz)
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [isChecked, setIsChecked] = useState(false)
   const [answers, setAnswers] = useState<Record<number, string>>({})
-  const [done, setDone] = useState(false)
   const [quizStarted, setQuizStarted] = useState(false)
-
-  const { formatted: time } = useTimer(quizStarted && !done)
+  const { elapsed } = useTimer(quizStarted)
 
   const current = questions[index]
-  const progress = ((index + (selected ? 1 : 0)) / questions.length) * 100
+  const progress = (index / questions.length) * 100
+  const timeLeft = TIME_LIMIT - elapsed
+  const timeFormatted = `${String(Math.floor(timeLeft / 60)).padStart(2, '0')}:${String(Math.max(timeLeft % 60, 0)).padStart(2, '0')}`
+
+  const correct = Object.entries(answers).filter(
+    ([i, ans]) => ans === questions[Number(i)].correct,
+  ).length
+
+  const finishQuiz = useCallback(() => {
+    navigate('/quiz/result', {
+      state: { score: correct, total: questions.length, timeSpent: elapsed },
+    })
+  }, [correct, elapsed, navigate, questions.length])
+
+  // Auto-finish on timeout
+  useEffect(() => {
+    if (quizStarted && timeLeft <= 0) finishQuiz()
+  }, [quizStarted, timeLeft, finishQuiz])
 
   const handleSelect = (option: string) => {
-    if (selected) return
+    if (isChecked) return
     setSelected(option)
-    setAnswers((prev) => ({ ...prev, [index]: option }))
+  }
+
+  const handleCheck = () => {
+    if (!selected) return
+    setIsChecked(true)
+    setAnswers((prev) => ({ ...prev, [index]: selected }))
   }
 
   const handleNext = useCallback(() => {
     if (index + 1 >= questions.length) {
-      setDone(true)
+      finishQuiz()
     } else {
       setSelected(null)
+      setIsChecked(false)
       setIndex((i) => i + 1)
     }
-  }, [index, questions.length])
+  }, [index, questions.length, finishQuiz])
 
-  const correct = Object.entries(answers).filter(([i, ans]) => ans === questions[Number(i)].correct).length
-  const score = Math.round((correct / questions.length) * 100)
-  const xp = correct * 10 + (score >= 80 ? 50 : 0)
-
+  // ── Pre-quiz lobby ───────────────────────────────────────
   if (!quizStarted) {
     return (
       <motion.div
@@ -86,17 +109,19 @@ export default function QuizPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mx-auto max-w-lg space-y-6 py-8 text-center"
       >
-        <div className="flex h-20 w-20 mx-auto items-center justify-center rounded-2xl bg-primary-100 dark:bg-primary-900/40">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-primary-100 dark:bg-primary-900/40">
           <Target className="h-10 w-10 text-primary-600 dark:text-primary-400" />
         </div>
         <div>
           <Heading level="h2">Vocabulary Quiz</Heading>
-          <Text variant="muted" className="mt-2">Test your knowledge with {questions.length} questions</Text>
+          <Text variant="muted" className="mt-2">
+            Test your knowledge with {questions.length} questions
+          </Text>
         </div>
         <div className="grid grid-cols-3 gap-4 text-center">
           {[
             { label: 'Questions', value: `${questions.length}` },
-            { label: 'Time', value: 'Untimed' },
+            { label: 'Time Limit', value: '10 min' },
             { label: 'XP Reward', value: `Up to ${questions.length * 10 + 50}` },
           ].map((item) => (
             <Card key={item.label} padding="md">
@@ -112,171 +137,146 @@ export default function QuizPage() {
     )
   }
 
-  if (done) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="mx-auto max-w-lg space-y-6 py-8"
-      >
-        <div className="text-center space-y-3">
-          <div className="text-5xl">{score >= 80 ? '🎉' : score >= 50 ? '👍' : '💪'}</div>
-          <Heading level="h2">{score >= 80 ? 'Great Job!' : score >= 50 ? 'Good Effort!' : 'Keep Practicing!'}</Heading>
-        </div>
-
-        <Card padding="lg">
-          <div className="grid grid-cols-2 gap-6 text-center">
-            <div>
-              <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">{score}%</p>
-              <p className="text-body-sm text-text-muted dark:text-slate-500">Score</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-success-600 dark:text-success-400">+{xp}</p>
-              <p className="text-body-sm text-text-muted dark:text-slate-500">XP Earned</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-text-primary dark:text-slate-100">{correct}/{questions.length}</p>
-              <p className="text-body-sm text-text-muted dark:text-slate-500">Correct</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-text-primary dark:text-slate-100">{time}</p>
-              <p className="text-body-sm text-text-muted dark:text-slate-500">Time</p>
-            </div>
-          </div>
-        </Card>
-
-        <div className="space-y-2">
-          <h3 className="text-heading-4 text-text-primary dark:text-slate-100">Review Answers</h3>
-          {questions.map((q, i) => {
-            const userAnswer = answers[i]
-            const isCorrect = userAnswer === q.correct
-            return (
-              <div key={i} className={cn(
-                'flex items-start gap-3 rounded-xl p-3',
-                isCorrect ? 'bg-success-50 dark:bg-success-900/20' : 'bg-error-50 dark:bg-error-900/20',
-              )}>
-                {isCorrect
-                  ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success-500" />
-                  : <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-error-500" />}
-                <div>
-                  <p className="text-body-sm font-semibold capitalize text-text-primary dark:text-slate-100">{q.word}</p>
-                  {!isCorrect && (
-                    <p className="text-caption text-text-secondary dark:text-slate-400">
-                      Correct: {q.correct}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="flex gap-3">
-          <Button fullWidth variant="outline" onClick={() => { setDone(false); setIndex(0); setSelected(null); setAnswers({}) }}>
-            Try Again
-          </Button>
-          <Link to="/dashboard" className="flex-1">
-            <Button fullWidth>Dashboard</Button>
-          </Link>
-        </div>
-      </motion.div>
-    )
-  }
-
+  // ── Quiz ─────────────────────────────────────────────────
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="mx-auto max-w-2xl space-y-4 sm:space-y-6"
-    >
-      {/* Header row — stacks on mobile */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-caption font-semibold uppercase tracking-wide text-text-muted dark:text-slate-500">
-            Vocabulary Quiz
-          </p>
-          <p className="text-body-sm text-text-secondary dark:text-slate-400">
-            Question {index + 1} of {questions.length}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-body-sm dark:border-border-dark">
-            <Clock className="h-4 w-4 text-text-muted" />
-            <span className="font-mono font-medium text-text-primary dark:text-slate-100">{time}</span>
-          </div>
-          <Badge variant="primary">{correct} / {index} correct</Badge>
-        </div>
-      </div>
-
-      <ProgressBar value={progress} />
-
-      <Card padding="lg">
-        <p className="mb-2 text-caption font-semibold uppercase tracking-wide text-text-muted dark:text-slate-500">
-          Which word means...
-        </p>
-        <h2 className="text-heading-2 text-text-primary dark:text-slate-100">
-          &ldquo;{current.correct}&rdquo;
-        </h2>
-      </Card>
-
-      {/* Answer options — 1 col mobile, 2 col sm+ */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        {current.options.map((option, i) => {
-          const isCorrect = option === current.correct
-          const isSelected = option === selected
-          const revealed = !!selected
-          return (
-            <button
-              key={option}
-              type="button"
-              onClick={() => handleSelect(option)}
-              disabled={revealed}
-              className={cn(
-                'flex items-start gap-3 rounded-xl border p-4 text-left transition-all',
-                !revealed && 'border-border hover:border-primary-400 hover:bg-primary-50 dark:border-border-dark dark:hover:bg-primary-900/20',
-                revealed && isCorrect && 'border-success-500 bg-success-50 dark:bg-success-900/20',
-                revealed && isSelected && !isCorrect && 'border-error-500 bg-error-50 dark:bg-error-900/20',
-                revealed && !isSelected && !isCorrect && 'border-border opacity-50 dark:border-border-dark',
-              )}
-            >
-              <span className={cn(
-                'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-caption font-bold',
-                revealed && isCorrect ? 'bg-success-500 text-white' :
-                revealed && isSelected && !isCorrect ? 'bg-error-500 text-white' :
-                'bg-slate-100 text-text-secondary dark:bg-slate-800',
-              )}>
-                {String.fromCharCode(65 + i)}
-              </span>
-              <span className="flex-1 text-body capitalize text-text-primary dark:text-slate-200">{option}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      <AnimatePresence>
-        {selected && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={cn(
-              'flex flex-col gap-3 rounded-xl p-4 sm:flex-row sm:items-center sm:justify-between',
-              selected === current.correct
-                ? 'bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400'
-                : 'bg-error-50 text-error-700 dark:bg-error-900/20 dark:text-error-400',
-            )}
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
+      {/* Sticky header */}
+      <header className="sticky top-16 z-10 border-b border-border bg-surface-light/95 px-4 py-3 backdrop-blur-sm dark:border-border-dark dark:bg-surface-card-dark/95 lg:top-0">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-surface-muted dark:text-slate-400 dark:hover:bg-slate-800"
+            aria-label="Exit quiz"
           >
-            <div className="flex items-center gap-2">
-              {selected === current.correct ? <CheckCircle2 className="h-5 w-5 shrink-0" /> : <XCircle className="h-5 w-5 shrink-0" />}
-              <span className="font-medium text-sm">
-                {selected === current.correct ? 'Correct! +10 XP' : `Correct answer: "${current.correct}"`}
+            <X className="h-5 w-5" />
+          </button>
+
+          <div className="flex-1">
+            <div className="mb-1.5 flex items-center justify-between text-body-sm">
+              <span className="font-semibold uppercase tracking-wide text-text-muted dark:text-slate-500">
+                Question {index + 1} of {questions.length}
               </span>
+              <div className="flex items-center gap-1.5 font-mono font-medium text-primary-600 dark:text-primary-400">
+                <Timer className="h-4 w-4" />
+                {timeFormatted}
+              </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleNext} className="w-full sm:w-auto">
-              {index + 1 >= questions.length ? 'See Results' : 'Next'}
+            <ProgressBar value={progress} size="sm" />
+          </div>
+
+          <div className="w-9" aria-hidden="true" />
+        </div>
+      </header>
+
+      {/* Question */}
+      <main className="flex flex-1 flex-col justify-center py-8">
+        <div className="mx-auto w-full max-w-3xl px-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25 }}
+            >
+              <h2 className="mb-8 text-center text-2xl font-bold leading-snug text-text-primary dark:text-slate-100 sm:text-3xl">
+                {current.question}
+              </h2>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {current.options.map((option) => {
+                  const isSelected = selected === option
+                  const isCorrect = option === current.correct
+                  let cls = 'border-border bg-white text-text-primary hover:border-primary-400 hover:bg-primary-50 dark:border-border-dark dark:bg-surface-card-dark dark:text-slate-200 dark:hover:bg-primary-900/20'
+
+                  if (isChecked) {
+                    if (isCorrect) {
+                      cls = 'border-success-500 bg-success-50 text-success-800 ring-1 ring-success-500 dark:bg-success-900/20 dark:text-success-300'
+                    } else if (isSelected) {
+                      cls = 'border-error-500 bg-error-50 text-error-800 ring-1 ring-error-500 dark:bg-error-900/20 dark:text-error-300'
+                    } else {
+                      cls = 'border-border bg-slate-50 text-text-muted opacity-60 dark:border-border-dark dark:bg-slate-800/40'
+                    }
+                  } else if (isSelected) {
+                    cls = 'border-primary-600 bg-primary-50 text-primary-800 ring-1 ring-primary-600 dark:border-primary-500 dark:bg-primary-900/20 dark:text-primary-200'
+                  }
+
+                  return (
+                    <motion.button
+                      key={option}
+                      type="button"
+                      whileHover={{ scale: isChecked ? 1 : 1.015 }}
+                      whileTap={{ scale: isChecked ? 1 : 0.98 }}
+                      onClick={() => handleSelect(option)}
+                      disabled={isChecked}
+                      className={cn(
+                        'rounded-2xl border-2 p-5 text-left text-base font-medium transition-all duration-150',
+                        cls,
+                      )}
+                    >
+                      {option}
+                    </motion.button>
+                  )
+                })}
+              </div>
+
+              {/* Feedback */}
+              <AnimatePresence>
+                {isChecked && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={cn(
+                      'mt-6 flex items-center gap-2 rounded-xl p-4 text-base font-medium',
+                      selected === current.correct
+                        ? 'bg-success-50 text-success-800 dark:bg-success-900/20 dark:text-success-300'
+                        : 'bg-error-50 text-error-800 dark:bg-error-900/20 dark:text-error-300',
+                    )}
+                  >
+                    {selected === current.correct
+                      ? <CheckCircle2 className="h-5 w-5 shrink-0" />
+                      : <XCircle className="h-5 w-5 shrink-0" />}
+                    {selected === current.correct ? '✓ Correct! Great job.' : '✕ Not quite right.'}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
+
+      {/* Footer actions */}
+      <footer className="border-t border-border bg-surface-light px-4 py-4 dark:border-border-dark dark:bg-surface-card-dark">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+          <button
+            type="button"
+            className="flex items-center gap-2 text-body-sm font-medium text-text-muted transition-colors hover:text-text-secondary dark:text-slate-500"
+          >
+            <AlertCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Report Issue</span>
+          </button>
+
+          {!isChecked ? (
+            <Button
+              size="lg"
+              onClick={handleCheck}
+              disabled={!selected}
+              className="min-w-[160px]"
+            >
+              Check Answer
             </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+          ) : (
+            <Button
+              size="lg"
+              onClick={handleNext}
+              className="min-w-[160px]"
+            >
+              {index + 1 >= questions.length ? 'View Results' : 'Next Question →'}
+            </Button>
+          )}
+        </div>
+      </footer>
+    </div>
   )
 }
