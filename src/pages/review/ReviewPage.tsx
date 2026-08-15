@@ -1,168 +1,159 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { BookOpen, Brain, Clock, Flame, RotateCcw } from 'lucide-react'
-import { Badge, Button, Card, Heading, Text } from '@/components/common'
-import FlashcardsEmbed from '@/pages/flashcards/FlashcardsPage'
+import { AlertTriangle, BrainCircuit, ChevronRight, Clock, History, Play } from 'lucide-react'
+import { Heading, Text } from '@/components/common'
 
-interface ReviewSection {
-  id: string
-  title: string
-  subtitle: string
-  icon: React.ElementType
-  count: number
-  color: string
-  badgeVariant: 'error' | 'warning' | 'primary' | 'success'
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.09 } },
+}
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
 }
 
-const SECTIONS: ReviewSection[] = [
+const CATEGORIES = [
   {
-    id: 'due',
+    id: 'due-today',
     title: 'Due Today',
-    subtitle: 'Words scheduled for review based on spaced repetition',
-    icon: Clock,
+    description: 'Words scheduled for review based on your learning curve.',
     count: 24,
-    color: 'bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400',
-    badgeVariant: 'primary',
+    icon: BrainCircuit,
+    color: 'text-primary-600 dark:text-primary-400',
+    bg: 'bg-primary-100 dark:bg-primary-900/40',
+    border: 'border-primary-100 hover:border-primary-300 dark:border-primary-900/60 dark:hover:border-primary-700',
   },
   {
     id: 'difficult',
     title: 'Difficult Words',
-    subtitle: 'Words you have struggled with most',
-    icon: Brain,
-    count: 8,
-    color: 'bg-error-100 text-error-600 dark:bg-error-900/40 dark:text-error-400',
-    badgeVariant: 'error',
+    description: 'Words you marked as "Hard" or got wrong in quizzes.',
+    count: 12,
+    icon: AlertTriangle,
+    color: 'text-warning-600 dark:text-warning-400',
+    bg: 'bg-warning-100 dark:bg-warning-900/40',
+    border: 'border-warning-100 hover:border-warning-300 dark:border-warning-900/60 dark:hover:border-warning-700',
   },
   {
-    id: 'recent',
+    id: 'recently-learned',
     title: 'Recently Learned',
-    subtitle: 'Reinforce words you learned in the last 7 days',
-    icon: BookOpen,
-    count: 15,
-    color: 'bg-success-100 text-success-600 dark:bg-success-900/40 dark:text-success-400',
-    badgeVariant: 'success',
+    description: 'New vocabulary from the last 48 hours.',
+    count: 18,
+    icon: Clock,
+    color: 'text-success-600 dark:text-success-400',
+    bg: 'bg-success-100 dark:bg-success-900/40',
+    border: 'border-success-100 hover:border-success-300 dark:border-success-900/60 dark:hover:border-success-700',
   },
   {
     id: 'forgotten',
     title: 'Frequently Forgotten',
-    subtitle: 'Words you keep getting wrong',
-    icon: RotateCcw,
-    count: 6,
-    color: 'bg-warning-100 text-warning-600 dark:bg-warning-900/40 dark:text-warning-400',
-    badgeVariant: 'warning',
+    description: 'Words you keep forgetting during reviews.',
+    count: 8,
+    icon: History,
+    color: 'text-error-600 dark:text-error-400',
+    bg: 'bg-error-100 dark:bg-error-900/40',
+    border: 'border-error-100 hover:border-error-300 dark:border-error-900/60 dark:hover:border-error-700',
   },
 ]
 
 export default function ReviewPage() {
-  const [reviewing, setReviewing] = useState(false)
-
-  if (reviewing) {
-    return (
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <Heading level="h2">Review Session</Heading>
-          <Button variant="ghost" size="sm" onClick={() => setReviewing(false)}>
-            ← Back
-          </Button>
-        </div>
-        <FlashcardsEmbed />
-      </div>
-    )
-  }
-
-  const totalDue = SECTIONS.reduce((sum, s) => sum + s.count, 0)
+  const navigate = useNavigate()
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="mx-auto max-w-4xl space-y-6"
-    >
-      <header className="space-y-2">
+    <div className="mx-auto max-w-5xl space-y-8">
+      <header>
         <Heading level="h1">Review</Heading>
-        <Text variant="body-sm">Strengthen your memory with smart reviews.</Text>
+        <Text variant="body-sm" className="mt-1">
+          Strengthen your memory with smart reviews.
+        </Text>
       </header>
 
-      <Card
-        className="border-primary-200 bg-gradient-to-br from-primary-50 to-white dark:border-primary-800/40 dark:from-primary-950/30 dark:to-surface-card-dark"
-        padding="lg"
-      >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 dark:bg-primary-900/40">
-              <Flame className="h-7 w-7 text-primary-600 dark:text-primary-400" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-heading-3 text-text-primary dark:text-slate-100">
-                {totalDue} words ready for review
-              </p>
-              <p className="text-body-sm text-text-secondary dark:text-slate-400">
-                Complete your review to maintain your streak
-              </p>
-            </div>
-          </div>
-          <Button size="lg" onClick={() => setReviewing(true)}>
-            Start Review
-          </Button>
-        </div>
-      </Card>
+      <motion.div variants={container} initial="hidden" animate="visible" className="space-y-8">
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        {SECTIONS.map((section, index) => {
-          const Icon = section.icon
-          return (
-            <motion.div
-              key={section.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.07 }}
+        {/* ── Hero card ── */}
+        <motion.div
+          variants={item}
+          className="relative overflow-hidden rounded-3xl p-8 text-white shadow-lg sm:p-10"
+          style={{ background: 'linear-gradient(135deg, var(--color-accent) 0%, oklch(46% 0.145 175) 100%)' }}
+        >
+          {/* content */}
+          <div className="relative z-10 md:w-2/3">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium"
+              style={{ background: 'oklch(99% 0.005 175 / 0.15)' }}>
+              <BrainCircuit className="h-4 w-4" />
+              Spaced Repetition Active
+            </div>
+
+            <h2 className="mb-3 text-3xl font-bold leading-tight sm:text-4xl">
+              24 words are ready<br className="hidden sm:block" /> for review today.
+            </h2>
+            <p className="mb-7 max-w-md text-lg" style={{ color: 'oklch(99% 0.005 175 / 0.8)' }}>
+              Consistent daily review moves vocabulary from short-term to long-term memory.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => navigate('/flashcards')}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-base font-bold shadow transition-colors hover:bg-slate-50"
+              style={{ color: 'var(--color-accent)' }}
             >
-              <Card className="flex h-full flex-col transition-shadow hover:shadow-md" padding="lg">
-                <div className="mb-4 flex items-start justify-between">
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${section.color}`}>
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <Badge variant={section.badgeVariant}>{section.count} words</Badge>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-heading-4 mb-1 text-text-primary dark:text-slate-100">
-                    {section.title}
-                  </h3>
-                  <p className="text-body-sm text-text-secondary dark:text-slate-400">
-                    {section.subtitle}
-                  </p>
-                </div>
-                <div className="mt-4">
-                  <Button variant="outline" size="sm" fullWidth onClick={() => setReviewing(true)}>
-                    Review Now
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-          )
-        })}
-      </div>
+              <Play className="h-5 w-5 fill-current" />
+              Start Review
+            </button>
+          </div>
 
-      <Card padding="lg" className="text-center">
-        <div className="flex flex-col items-center gap-3 py-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success-100 dark:bg-success-900/30">
-            <BookOpen className="h-7 w-7 text-success-600 dark:text-success-500" />
+          {/* decorative icon */}
+          <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-1/3 opacity-10 md:block">
+            <BrainCircuit className="h-full w-full scale-150" />
           </div>
-          <div>
-            <p className="text-body font-medium text-text-primary dark:text-slate-100">
-              Looking for more to study?
-            </p>
-            <p className="text-body-sm text-text-secondary dark:text-slate-400">
-              Explore the vocabulary dictionary to discover new words.
-            </p>
+        </motion.div>
+
+        {/* ── Categories ── */}
+        <div>
+          <h3 className="mb-5 text-xl font-bold text-text-primary dark:text-slate-100">
+            Review Categories
+          </h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            {CATEGORIES.map((cat) => {
+              const Icon = cat.icon
+              return (
+                <motion.div
+                  key={cat.id}
+                  variants={item}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => navigate('/flashcards')}
+                  className={`group flex cursor-pointer items-center justify-between rounded-2xl border-2 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:bg-surface-card-dark ${cat.border}`}
+                >
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className={`shrink-0 rounded-2xl p-3.5 ${cat.bg} ${cat.color}`}>
+                      <Icon className="h-7 w-7" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-text-primary dark:text-slate-100">{cat.title}</h4>
+                      <p className="truncate text-sm text-text-secondary dark:text-slate-400">
+                        {cat.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="ml-4 flex shrink-0 items-center gap-3">
+                    <div className="text-right">
+                      <span className="block text-2xl font-bold text-text-primary dark:text-slate-100">
+                        {cat.count}
+                      </span>
+                      <span className="text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-slate-500">
+                        Words
+                      </span>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-text-muted transition-colors group-hover:text-text-secondary dark:text-slate-600" />
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
-          <Link to="/vocabulary">
-            <Button variant="outline" size="sm">Explore Vocabulary</Button>
-          </Link>
         </div>
-      </Card>
-    </motion.div>
+
+      </motion.div>
+    </div>
   )
 }
