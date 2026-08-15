@@ -1,2 +1,1 @@
-// Progress page — Phase 12+
-export {}
+export { default as ProgressPage } from './ProgressPage'
