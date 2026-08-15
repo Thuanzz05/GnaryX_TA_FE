@@ -5,8 +5,6 @@ import {
   Ear,
   PenLine,
   Shuffle,
-  Spline,
-  Type,
   X,
 } from 'lucide-react'
 import { Badge, Button, Card, Heading, Text } from '@/components/common'

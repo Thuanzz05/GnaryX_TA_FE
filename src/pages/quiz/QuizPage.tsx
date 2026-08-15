@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Clock, Target, Trophy, XCircle } from 'lucide-react'
+import { CheckCircle2, Clock, Target, XCircle } from 'lucide-react'
 import { Badge, Button, Card, Heading, ProgressBar, Text } from '@/components/common'
 import { MOCK_VOCABULARY } from '@/data'
 import { cn } from '@/utils/cn'
@@ -55,7 +55,7 @@ export default function QuizPage() {
   const [done, setDone] = useState(false)
   const [quizStarted, setQuizStarted] = useState(false)
 
-  const { formatted: time, elapsed } = useTimer(quizStarted && !done)
+  const { formatted: time } = useTimer(quizStarted && !done)
 
   const current = questions[index]
   const progress = ((index + (selected ? 1 : 0)) / questions.length) * 100

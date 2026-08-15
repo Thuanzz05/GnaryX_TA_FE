@@ -34,7 +34,7 @@ export default function SettingsPage() {
   const [name, setName] = useState(user?.fullName ?? '')
   const [email, setEmail] = useState(user?.email ?? '')
   const [dailyGoal, setDailyGoal] = useState(String(user?.dailyGoal ?? 20))
-  const [level, setLevel] = useState(user?.level ?? 'B1')
+  const [level, setLevel] = useState<"A1" | "A2" | "B1" | "B2" | "C1" | "C2">(user?.level ?? 'B1')
   const [topic, setTopic] = useState(user?.preferredTopics?.[0] ?? 'Business')
   const [notifications, setNotifications] = useState({ daily: true, review: true, achievement: true })
 
@@ -73,7 +73,7 @@ export default function SettingsPage() {
           label="English Level"
           value={level}
           options={LEVEL_OPTIONS}
-          onChange={(e) => setLevel(e.target.value)}
+          onChange={(e) => setLevel(e.target.value as "A1" | "A2" | "B1" | "B2" | "C1" | "C2")}
         />
         <Select
           label="Daily Goal"

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
-import { Button, Card } from '@/components/common'
+import { Button } from '@/components/common'
 import { MOCK_VOCABULARY } from '@/data'
 import { cn } from '@/utils/cn'
 
