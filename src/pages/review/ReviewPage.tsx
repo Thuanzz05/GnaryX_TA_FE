@@ -115,10 +115,10 @@ export default function ReviewPage() {
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => navigate('/flashcards')}
-                  className={`group bg-white p-4 sm:p-6 rounded-2xl border-2 ${category.borderColor} ${category.hoverBorder} transition-all cursor-pointer flex items-center justify-between shadow-sm hover:shadow-md`}
+                  className={`group bg-white p-4 sm:p-6 rounded-2xl border-2 ${category.border} transition-all cursor-pointer flex items-center justify-between shadow-sm hover:shadow-md`}
                 >
                   <div className="flex items-center space-x-3 sm:space-x-5 flex-1 min-w-0">
-                    <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl shrink-0 ${category.bgColor} ${category.color}`}>
+                    <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl shrink-0 ${category.bg} ${category.color}`}>
                       <Icon size={24} className="sm:w-7 sm:h-7" />
                     </div>
                     <div className="min-w-0 pr-2">

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, Flame, BookOpen, Trophy, Target } from 'lucide-react'
-import { cn } from '@/utils/cn'
 import { Button } from '@/components/common/Button'
 import { Text } from '@/components/common/Typography'
 
@@ -104,7 +103,13 @@ export function NotificationDropdown() {
         >
           <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <p className="font-bold text-gray-900 text-base sm:text-lg">Notifications</p>
-            <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700">Mark all read</button>
+            <button
+              type="button"
+              onClick={markAllRead}
+              className="text-xs font-medium text-indigo-600 hover:text-indigo-700"
+            >
+              Mark all read
+            </button>
           </div>
 
           <div className="max-h-[60vh] overflow-y-auto">

@@ -1,2 +1,2 @@
-// Progress components — Phase 12+
-export {}
+export { CEFRProgress } from './CEFRProgress'
+export { WordsLearnedChart } from './WordsLearnedChart'

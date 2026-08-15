@@ -1,2 +1,1 @@
-// Quiz components — Phase 10+
-export {}
+export { QuizQuestion } from './QuizQuestion'
