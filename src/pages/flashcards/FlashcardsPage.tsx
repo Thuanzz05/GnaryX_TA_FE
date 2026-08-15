@@ -140,7 +140,7 @@ export default function FlashcardsPage() {
       {/* Card */}
       <div
         className="relative cursor-pointer"
-        style={{ perspective: '1200px', height: '340px' }}
+        style={{ perspective: '1200px', height: 'clamp(260px, 45vw, 340px)' }}
         onClick={handleFlip}
         role="button"
         tabIndex={0}
@@ -248,22 +248,25 @@ export default function FlashcardsPage() {
           onClick={handlePrev}
           disabled={currentIndex === 0}
         >
-          Previous
+          <span className="hidden sm:inline">Previous</span>
         </Button>
-        <div className="flex items-center gap-2">
-          {cards.map((_, i) => (
+        <div className="flex items-center gap-1 overflow-hidden max-w-[160px] sm:max-w-none">
+          {cards.slice(0, 10).map((_, i) => (
             <span
               key={i}
               className={cn(
-                'h-2 w-2 rounded-full transition-colors',
+                'h-2 shrink-0 rounded-full transition-all',
                 i === currentIndex
-                  ? 'bg-primary-600 dark:bg-primary-400'
+                  ? 'w-5 bg-primary-600 dark:bg-primary-400'
                   : i < currentIndex
-                    ? 'bg-primary-200 dark:bg-primary-800'
-                    : 'bg-slate-200 dark:bg-slate-700',
+                    ? 'w-2 bg-primary-200 dark:bg-primary-800'
+                    : 'w-2 bg-slate-200 dark:bg-slate-700',
               )}
             />
           ))}
+          {cards.length > 10 && (
+            <span className="ml-1 text-caption text-text-muted">+{cards.length - 10}</span>
+          )}
         </div>
         <Button
           variant="outline"
@@ -272,7 +275,7 @@ export default function FlashcardsPage() {
           onClick={handleNext}
           disabled={currentIndex === cards.length - 1}
         >
-          Next
+          <span className="hidden sm:inline">Next</span>
         </Button>
       </div>
 

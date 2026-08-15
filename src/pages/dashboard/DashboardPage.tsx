@@ -72,7 +72,7 @@ export default function DashboardPage() {
           <TodaysLearningPlan items={data.learningPlan} />
         </div>
 
-        <aside className="space-y-6">
+        <aside className="space-y-6 lg:order-last">
           <WordOfTheDayCard word={data.wordOfTheDay} />
           <RecentActivityList activities={data.recentActivity} />
         </aside>

@@ -187,9 +187,10 @@ export default function QuizPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mx-auto max-w-2xl space-y-6"
+      className="mx-auto max-w-2xl space-y-4 sm:space-y-6"
     >
-      <div className="flex items-center justify-between">
+      {/* Header row — stacks on mobile */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-caption font-semibold uppercase tracking-wide text-text-muted dark:text-slate-500">
             Vocabulary Quiz
@@ -198,7 +199,7 @@ export default function QuizPage() {
             Question {index + 1} of {questions.length}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-body-sm dark:border-border-dark">
             <Clock className="h-4 w-4 text-text-muted" />
             <span className="font-mono font-medium text-text-primary dark:text-slate-100">{time}</span>
@@ -218,6 +219,7 @@ export default function QuizPage() {
         </h2>
       </Card>
 
+      {/* Answer options — 1 col mobile, 2 col sm+ */}
       <div className="grid gap-3 sm:grid-cols-2">
         {current.options.map((option, i) => {
           const isCorrect = option === current.correct
@@ -257,19 +259,19 @@ export default function QuizPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-              'flex items-center justify-between rounded-xl p-4',
+              'flex flex-col gap-3 rounded-xl p-4 sm:flex-row sm:items-center sm:justify-between',
               selected === current.correct
                 ? 'bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-400'
                 : 'bg-error-50 text-error-700 dark:bg-error-900/20 dark:text-error-400',
             )}
           >
             <div className="flex items-center gap-2">
-              {selected === current.correct ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-              <span className="font-medium">
+              {selected === current.correct ? <CheckCircle2 className="h-5 w-5 shrink-0" /> : <XCircle className="h-5 w-5 shrink-0" />}
+              <span className="font-medium text-sm">
                 {selected === current.correct ? 'Correct! +10 XP' : `Correct answer: "${current.correct}"`}
               </span>
             </div>
-            <Button variant="outline" size="sm" onClick={handleNext}>
+            <Button variant="outline" size="sm" onClick={handleNext} className="w-full sm:w-auto">
               {index + 1 >= questions.length ? 'See Results' : 'Next'}
             </Button>
           </motion.div>

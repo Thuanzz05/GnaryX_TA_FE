@@ -86,9 +86,9 @@ export default function ProgressPage() {
 
       {/* Charts row */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card padding="lg">
+        <Card padding="lg" className="min-w-0">
           <Heading level="h3" className="mb-4">Words Learned — This Week</Heading>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={wordsData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="wordsGrad" x1="0" y1="0" x2="0" y2="1">
@@ -97,21 +97,21 @@ export default function ProgressPage() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
               <Area type="monotone" dataKey="words" stroke="#6366f1" strokeWidth={2} fill="url(#wordsGrad)" />
             </AreaChart>
           </ResponsiveContainer>
         </Card>
 
-        <Card padding="lg">
+        <Card padding="lg" className="min-w-0">
           <Heading level="h3" className="mb-4">Weekly Study Time (min)</Heading>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={180}>
             <BarChart data={studyTimeData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
               <Bar dataKey="minutes" fill="#6366f1" radius={[6, 6, 0, 0]} />
             </BarChart>
@@ -161,12 +161,12 @@ export default function ProgressPage() {
       </Card>
 
       {/* Pie chart */}
-      <Card padding="lg">
+      <Card padding="lg" className="min-w-0">
         <Heading level="h3" className="mb-4">Vocabulary Distribution</Heading>
         <div className="flex flex-col items-center gap-6 sm:flex-row">
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={levelData.filter(l => l.value > 0)} dataKey="value" cx="50%" cy="50%" outerRadius={90} innerRadius={50}>
+              <Pie data={levelData.filter(l => l.value > 0)} dataKey="value" cx="50%" cy="50%" outerRadius={80} innerRadius={44}>
                 {levelData.filter(l => l.value > 0).map((entry) => (
                   <Cell key={entry.name} fill={entry.color} />
                 ))}
@@ -179,13 +179,13 @@ export default function ProgressPage() {
       </Card>
 
       {/* Quiz performance */}
-      <Card padding="lg">
+      <Card padding="lg" className="min-w-0">
         <Heading level="h3" className="mb-4">Quiz Performance</Heading>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={180}>
           <LineChart data={quizData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis dataKey="week" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} />
+            <XAxis dataKey="week" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
             <Tooltip formatter={(v) => [`${v}%`, 'Score']} />
             <Line
               type="monotone"

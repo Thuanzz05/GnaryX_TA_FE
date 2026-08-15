@@ -154,7 +154,7 @@ export default function LessonDetailPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mx-auto max-w-3xl space-y-6"
+      className="mx-auto max-w-3xl space-y-4 sm:space-y-6"
     >
       <div className="flex items-center gap-3">
         <Link
@@ -162,19 +162,19 @@ export default function LessonDetailPage() {
           className="inline-flex items-center gap-1.5 text-body-sm font-medium text-text-secondary transition-colors hover:text-text-primary dark:text-slate-400 dark:hover:text-slate-200"
         >
           <ArrowLeft className="h-4 w-4" />
-          {course.title}
+          <span className="truncate max-w-[180px] sm:max-w-none">{course.title}</span>
         </Link>
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
             <p className="text-caption font-semibold uppercase tracking-wide text-text-muted dark:text-slate-500">
               Lesson {String(lesson.number).padStart(2, '0')}
             </p>
-            <Heading level="h2">{lesson.title}</Heading>
+            <Heading level="h2" className="truncate">{lesson.title}</Heading>
           </div>
-          <Badge variant="outline">{currentIdx + 1} / {words.length}</Badge>
+          <Badge variant="outline" className="shrink-0 mt-1">{currentIdx + 1} / {words.length}</Badge>
         </div>
         <ProgressBar value={progress} />
         <Text variant="caption">
@@ -194,11 +194,12 @@ export default function LessonDetailPage() {
             className="border-t-4"
             style={{ borderTopColor: course.color }}
           >
-            <div className="space-y-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
+            <div className="space-y-4">
+              {/* Word + badges */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-display capitalize text-text-primary dark:text-slate-100">
+                    <h2 className="text-3xl sm:text-4xl font-bold capitalize text-text-primary dark:text-slate-100 break-all">
                       {current.word}
                     </h2>
                     {learnedIds.has(current.id) && (
@@ -209,7 +210,7 @@ export default function LessonDetailPage() {
                     {current.phonetic}
                   </p>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   <Badge variant="primary">{current.level}</Badge>
                   <Badge variant="outline" className="capitalize">{current.partOfSpeech}</Badge>
                 </div>
@@ -267,42 +268,46 @@ export default function LessonDetailPage() {
         </motion.div>
       )}
 
-      <div className="flex items-center justify-between">
+      {/* Navigation */}
+      <div className="flex items-center justify-between gap-2">
         <Button
           variant="outline"
+          size="sm"
           leftIcon={<ArrowLeft className="h-4 w-4" />}
           onClick={handlePrev}
           disabled={currentIdx === 0}
         >
-          Previous
+          <span className="hidden sm:inline">Previous</span>
         </Button>
 
-        <div className="flex gap-1.5">
-          {words.slice(0, 8).map((w, i) => (
+        {/* Compact progress indicator */}
+        <div className="flex items-center gap-1">
+          {words.slice(0, 6).map((w, i) => (
             <button
               key={w.id}
               type="button"
               onClick={() => setCurrentIdx(i)}
-              className={`h-2 w-2 rounded-full transition-colors ${
+              className={`h-2 rounded-full transition-all ${
                 i === currentIdx
-                  ? 'bg-primary-600 dark:bg-primary-400'
+                  ? 'w-6 bg-primary-600 dark:bg-primary-400'
                   : learnedIds.has(w.id)
-                    ? 'bg-success-400'
-                    : 'bg-slate-200 dark:bg-slate-700'
+                    ? 'w-2 bg-success-400'
+                    : 'w-2 bg-slate-200 dark:bg-slate-700'
               }`}
               aria-label={`Go to word ${i + 1}`}
             />
           ))}
-          {words.length > 8 && (
-            <span className="text-caption text-text-muted">+{words.length - 8}</span>
+          {words.length > 6 && (
+            <span className="ml-1 text-caption text-text-muted">+{words.length - 6}</span>
           )}
         </div>
 
         <Button
+          size="sm"
           rightIcon={<ArrowRight className="h-4 w-4" />}
           onClick={handleNext}
         >
-          {currentIdx + 1 >= words.length ? 'Finish' : 'Next'}
+          {currentIdx + 1 >= words.length ? 'Finish' : <span className="hidden sm:inline">Next</span>}
         </Button>
       </div>
 
