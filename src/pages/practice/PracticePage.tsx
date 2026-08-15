@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
+  BookOpen,
   CheckSquare,
   Ear,
   PenLine,
   Shuffle,
+  SpellCheck,
   X,
 } from 'lucide-react'
 import { Badge, Button, Card, Heading, Text } from '@/components/common'
@@ -12,8 +14,10 @@ import { MultipleChoiceExercise } from '@/components/practice/MultipleChoiceExer
 import { FillInBlankExercise } from '@/components/practice/FillInBlankExercise'
 import { MatchingExercise } from '@/components/practice/MatchingExercise'
 import { ListeningExercise } from '@/components/practice/ListeningExercise'
+import { SpellingExercise } from '@/components/practice/SpellingExercise'
+import { WordMeaningExercise } from '@/components/practice/WordMeaningExercise'
 
-type ExerciseType = 'multiple-choice' | 'fill-blank' | 'matching' | 'listening'
+type ExerciseType = 'multiple-choice' | 'fill-blank' | 'matching' | 'listening' | 'spelling' | 'word-meaning'
 
 interface ExerciseMode {
   id: ExerciseType
@@ -36,6 +40,15 @@ const EXERCISE_MODES: ExerciseMode[] = [
     color: 'bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400',
   },
   {
+    id: 'word-meaning',
+    title: 'Word Meaning',
+    description: 'Choose the correct Vietnamese meaning for each word',
+    icon: BookOpen,
+    difficulty: 'Easy',
+    time: '5 min',
+    color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400',
+  },
+  {
     id: 'fill-blank',
     title: 'Fill in the Blank',
     description: 'Complete the sentence with the correct word',
@@ -52,6 +65,15 @@ const EXERCISE_MODES: ExerciseMode[] = [
     difficulty: 'Medium',
     time: '3 min',
     color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400',
+  },
+  {
+    id: 'spelling',
+    title: 'Spelling',
+    description: 'Listen and type the correct spelling of each word',
+    icon: SpellCheck,
+    difficulty: 'Hard',
+    time: '5 min',
+    color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400',
   },
   {
     id: 'listening',
@@ -74,12 +96,11 @@ export default function PracticePage() {
   const [activeExercise, setActiveExercise] = useState<ExerciseType | null>(null)
 
   if (activeExercise) {
+    const mode = EXERCISE_MODES.find((m) => m.id === activeExercise)
     return (
       <div className="mx-auto max-w-2xl">
         <div className="mb-6 flex items-center justify-between">
-          <Heading level="h2" className="capitalize">
-            {EXERCISE_MODES.find((m) => m.id === activeExercise)?.title}
-          </Heading>
+          <Heading level="h2">{mode?.title}</Heading>
           <Button
             variant="ghost"
             size="sm"
@@ -101,6 +122,8 @@ export default function PracticePage() {
             {activeExercise === 'fill-blank' && <FillInBlankExercise />}
             {activeExercise === 'matching' && <MatchingExercise />}
             {activeExercise === 'listening' && <ListeningExercise />}
+            {activeExercise === 'spelling' && <SpellingExercise />}
+            {activeExercise === 'word-meaning' && <WordMeaningExercise />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -116,12 +139,10 @@ export default function PracticePage() {
     >
       <header className="space-y-2">
         <Heading level="h1">Practice</Heading>
-        <Text variant="body-sm">
-          Sharpen your vocabulary with targeted exercises.
-        </Text>
+        <Text variant="body-sm">Sharpen your vocabulary with targeted exercises.</Text>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {EXERCISE_MODES.map((mode, index) => {
           const Icon = mode.icon
           return (
@@ -129,7 +150,7 @@ export default function PracticePage() {
               key={mode.id}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.07 }}
+              transition={{ duration: 0.3, delay: index * 0.06 }}
             >
               <Card
                 className="flex h-full flex-col cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
@@ -140,11 +161,9 @@ export default function PracticePage() {
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${mode.color}`}>
                     <Icon className="h-6 w-6" aria-hidden="true" />
                   </div>
-                  <div className="flex gap-2">
-                    <Badge variant={DIFFICULTY_VARIANT[mode.difficulty]} size="sm">
-                      {mode.difficulty}
-                    </Badge>
-                  </div>
+                  <Badge variant={DIFFICULTY_VARIANT[mode.difficulty]} size="sm">
+                    {mode.difficulty}
+                  </Badge>
                 </div>
                 <div className="flex-1">
                   <h3 className="text-heading-4 mb-1 text-text-primary dark:text-slate-100">
@@ -155,10 +174,8 @@ export default function PracticePage() {
                   </p>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                  <span className="text-caption text-text-muted dark:text-slate-500">
-                    ~{mode.time}
-                  </span>
-                  <Button variant="primary" size="sm" onClick={() => setActiveExercise(mode.id)}>
+                  <span className="text-caption text-text-muted dark:text-slate-500">~{mode.time}</span>
+                  <Button variant="primary" size="sm" onClick={(e) => { e.stopPropagation(); setActiveExercise(mode.id) }}>
                     Start
                   </Button>
                 </div>

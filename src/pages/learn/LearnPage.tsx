@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AlertCircle, Search } from 'lucide-react'
-import { Button, Heading, Input, Tabs, Text, type Tab } from '@/components/common'
+import { AlertCircle, BookOpen, Search } from 'lucide-react'
+import { Button, Heading, Input, SkeletonCourseCard, Tabs, Text, type Tab } from '@/components/common'
 import { CourseCard } from '@/components/courses'
 import { courseService } from '@/services/courseService'
 import type { Course } from '@/types'
@@ -106,18 +106,24 @@ export default function LearnPage() {
       {isLoading ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-80 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-700"
-            />
+            <SkeletonCourseCard key={i} />
           ))}
         </div>
       ) : filteredCourses.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-body text-text-secondary dark:text-slate-400">
-            No courses found. Try adjusting your filters.
-          </p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center gap-4 py-20 text-center"
+        >
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+            <BookOpen className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+          </div>
+          <Heading level="h3">No courses found</Heading>
+          <Text variant="muted">Try a different category or search term.</Text>
+          <Button variant="outline" onClick={() => { setActiveTab('All'); setSearchQuery('') }}>
+            Clear Filters
+          </Button>
+        </motion.div>
       ) : (
         <motion.div
           key={activeTab}

@@ -34,3 +34,6 @@ export type { ProgressBarProps, CircularProgressProps, StatCardProps } from './p
 
 export { Tabs } from './Tabs'
 export type { Tab } from './Tabs'
+
+export { Skeleton, SkeletonCard, SkeletonWordItem, SkeletonCourseCard } from './Skeleton'
+export { PageTransition } from './PageTransition'

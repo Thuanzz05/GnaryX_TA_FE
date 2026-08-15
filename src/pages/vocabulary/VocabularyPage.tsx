@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AlertCircle, Search, Star } from 'lucide-react'
-import { Button, Heading, Input, Text } from '@/components/common'
+import { AlertCircle, BookOpen, Search, Star } from 'lucide-react'
+import { Button, Heading, Input, SkeletonWordItem, Text } from '@/components/common'
 import { VocabularyFilters, VocabularyListItem } from '@/components/vocabulary'
 import { vocabularyService, type VocabularyFilters as Filters } from '@/services/vocabularyService'
 import type { CEFRLevel, PartOfSpeech, Difficulty, VocabularyWord } from '@/types'
@@ -112,18 +112,32 @@ export default function VocabularyPage() {
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-32 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-700"
-            />
+            <SkeletonWordItem key={i} />
           ))}
         </div>
       ) : words.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-body text-text-secondary dark:text-slate-400">
-            No words found. Try adjusting your filters.
-          </p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center gap-4 py-20 text-center"
+        >
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+            <BookOpen className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+          </div>
+          <Heading level="h3">No words found</Heading>
+          <Text variant="muted">
+            {showFavoritesOnly
+              ? 'You have no favorite words yet. Save words while learning!'
+              : 'Try adjusting your search or filters.'}
+          </Text>
+          {showFavoritesOnly ? (
+            <Button onClick={() => setShowFavoritesOnly(false)}>Browse All Words</Button>
+          ) : (
+            <Button variant="outline" onClick={() => { setSearchQuery(''); setFilters({ level: 'All', topic: 'All', partOfSpeech: 'All', difficulty: 'All', learned: 'All' }) }}>
+              Clear Filters
+            </Button>
+          )}
+        </motion.div>
       ) : (
         <>
           <div className="flex items-center justify-between">
