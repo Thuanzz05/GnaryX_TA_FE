@@ -99,62 +99,32 @@ export function NotificationDropdown() {
 
       {open && (
         <div
-          className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-border bg-surface-light shadow-modal dark:border-border-dark dark:bg-surface-card-dark"
+          className="absolute right-[-1rem] sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-[360px] bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden origin-top-right dark:bg-surface-card-dark dark:border-border-dark"
           role="menu"
         >
-          <div className="flex items-center justify-between border-b border-border px-4 py-3 dark:border-border-dark">
-            <p className="text-sm font-semibold text-text-primary dark:text-slate-100">
-              Notifications
-            </p>
-            {unreadCount > 0 && (
-              <button
-                type="button"
-                onClick={markAllRead}
-                className="text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
-              >
-                Mark all read
-              </button>
-            )}
+          <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <p className="font-bold text-gray-900 text-base sm:text-lg">Notifications</p>
+            <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700">Mark all read</button>
           </div>
 
-          <ul className="max-h-80 overflow-y-auto">
+          <div className="max-h-[60vh] overflow-y-auto">
             {notifications.map((notification) => (
-              <li
-                key={notification.id}
-                className={cn(
-                  'border-b border-border px-4 py-3 last:border-0 dark:border-border-dark',
-                  !notification.read && 'bg-primary-50/50 dark:bg-primary-900/10',
-                )}
-              >
-                <div className="flex gap-3">
-                  <div className="mt-0.5 shrink-0">{notification.icon}</div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-text-primary dark:text-slate-100">
-                      {notification.title}
-                    </p>
-                    {notification.description && (
-                      <Text variant="caption" className="mt-0.5">
-                        {notification.description}
-                      </Text>
-                    )}
-                    <Text variant="caption" className="mt-1">
-                      {notification.time}
-                    </Text>
-                  </div>
-                  {!notification.read && (
-                    <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary-500" />
+              <div key={notification.id} className="p-3 sm:p-4 border-b border-gray-50 hover:bg-gray-50 flex items-start space-x-3 cursor-pointer transition-colors">
+                <div className="mt-0.5 shrink-0">{notification.icon}</div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 leading-tight mb-1">{notification.title}</p>
+                  {notification.description && (
+                    <Text variant="caption" className="text-xs text-gray-500">{notification.description}</Text>
                   )}
+                  <Text variant="caption" className="text-xs text-gray-500 mt-1">{notification.time}</Text>
                 </div>
-              </li>
+                {!notification.read && <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary-500" />}
+              </div>
             ))}
-          </ul>
+          </div>
 
-          <div className="border-t border-border px-4 py-2 dark:border-border-dark">
-            <Link
-              to="/settings"
-              onClick={() => setOpen(false)}
-              className="block py-1.5 text-center text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
-            >
+          <div className="border-t border-gray-100 px-4 py-2">
+            <Link to="/settings" onClick={() => setOpen(false)} className="block py-1.5 text-center text-xs font-medium text-indigo-600 hover:text-indigo-700">
               Notification settings
             </Link>
           </div>

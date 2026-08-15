@@ -72,31 +72,26 @@ export default function ReviewPage() {
         {/* ── Hero card ── */}
         <motion.div
           variants={item}
-          className="relative overflow-hidden rounded-3xl p-8 text-white shadow-lg sm:p-10"
+          className="bg-indigo-600 rounded-2xl sm:rounded-3xl p-5 sm:p-10 text-white relative overflow-hidden shadow-lg shadow-indigo-200"
           style={{ background: 'linear-gradient(135deg, var(--color-accent) 0%, oklch(46% 0.145 175) 100%)' }}
         >
           {/* content */}
           <div className="relative z-10 md:w-2/3">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium"
-              style={{ background: 'oklch(99% 0.005 175 / 0.15)' }}>
-              <BrainCircuit className="h-4 w-4" />
-              Spaced Repetition Active
+            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+              <BrainCircuit size={16} className="sm:w-5 sm:h-5" />
+              <span>Spaced Repetition</span>
             </div>
-
-            <h2 className="mb-3 text-3xl font-bold leading-tight sm:text-4xl">
-              24 words are ready<br className="hidden sm:block" /> for review today.
+            <h2 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
+              24 words are ready <br className="hidden sm:block" />for review today.
             </h2>
-            <p className="mb-7 max-w-md text-lg" style={{ color: 'oklch(99% 0.005 175 / 0.8)' }}>
-              Consistent daily review moves vocabulary from short-term to long-term memory.
+            <p className="text-indigo-100 mb-6 sm:mb-8 text-sm sm:text-lg max-w-md">
+              Consistent daily review is the key to moving vocabulary from short-term to long-term memory.
             </p>
-
-            <button
-              type="button"
+            <button 
               onClick={() => navigate('/flashcards')}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-base font-bold shadow transition-colors hover:bg-slate-50"
-              style={{ color: 'var(--color-accent)' }}
+              className="inline-flex items-center justify-center w-full sm:w-auto bg-white text-indigo-600 px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-bold text-base sm:text-lg hover:bg-gray-50 transition-colors shadow-sm"
             >
-              <Play className="h-5 w-5 fill-current" />
+              <Play size={18} className="mr-2 sm:w-5 sm:h-5 fill-current" />
               Start Review
             </button>
           </div>
@@ -109,46 +104,39 @@ export default function ReviewPage() {
 
         {/* ── Categories ── */}
         <div>
-          <h3 className="mb-5 text-xl font-bold text-text-primary dark:text-slate-100">
-            Review Categories
-          </h3>
-          <div className="grid gap-4 md:grid-cols-2">
-            {CATEGORIES.map((cat) => {
-              const Icon = cat.icon
+          <h3 className="text-xl font-bold text-gray-900 mb-4 sm:mb-6">Review Categories</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            {CATEGORIES.map((category) => {
+              const Icon = category.icon;
               return (
                 <motion.div
-                  key={cat.id}
+                  key={category.id}
                   variants={item}
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => navigate('/flashcards')}
-                  className={`group flex cursor-pointer items-center justify-between rounded-2xl border-2 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:bg-surface-card-dark ${cat.border}`}
+                  className={`group bg-white p-4 sm:p-6 rounded-2xl border-2 ${category.borderColor} ${category.hoverBorder} transition-all cursor-pointer flex items-center justify-between shadow-sm hover:shadow-md`}
                 >
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div className={`shrink-0 rounded-2xl p-3.5 ${cat.bg} ${cat.color}`}>
-                      <Icon className="h-7 w-7" aria-hidden="true" />
+                  <div className="flex items-center space-x-3 sm:space-x-5 flex-1 min-w-0">
+                    <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl shrink-0 ${category.bgColor} ${category.color}`}>
+                      <Icon size={24} className="sm:w-7 sm:h-7" />
                     </div>
-                    <div className="min-w-0">
-                      <h4 className="font-bold text-text-primary dark:text-slate-100">{cat.title}</h4>
-                      <p className="truncate text-sm text-text-secondary dark:text-slate-400">
-                        {cat.description}
-                      </p>
+                    <div className="min-w-0 pr-2">
+                      <h4 className="text-base sm:text-lg font-bold text-gray-900 mb-0.5 sm:mb-1 truncate">{category.title}</h4>
+                      <p className="text-xs sm:text-sm text-gray-500 line-clamp-2 sm:line-clamp-1">{category.description}</p>
                     </div>
                   </div>
-
-                  <div className="ml-4 flex shrink-0 items-center gap-3">
+                  <div className="flex items-center space-x-2 sm:space-x-4 pl-2 sm:pl-4 shrink-0">
                     <div className="text-right">
-                      <span className="block text-2xl font-bold text-text-primary dark:text-slate-100">
-                        {cat.count}
-                      </span>
-                      <span className="text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-slate-500">
-                        Words
-                      </span>
+                      <span className="block text-xl sm:text-2xl font-bold text-gray-900">{category.count}</span>
+                      <span className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Words</span>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-text-muted transition-colors group-hover:text-text-secondary dark:text-slate-600" />
+                    <div className="text-gray-300 group-hover:text-gray-600 transition-colors hidden sm:block">
+                      <ChevronRight size={24} />
+                    </div>
                   </div>
                 </motion.div>
-              )
+              );
             })}
           </div>
         </div>

@@ -183,7 +183,7 @@ export default function FlashcardsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.2 }}
-            className="grid grid-cols-4 gap-3"
+            className="grid grid-cols-2 gap-3 sm:grid-cols-4"
           >
             {(Object.entries(RATING_CONFIG) as [Rating, typeof RATING_CONFIG[Rating]][]).map(([r, cfg]) => (
               <button

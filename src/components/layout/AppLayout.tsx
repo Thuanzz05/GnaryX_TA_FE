@@ -52,7 +52,7 @@ export function AppLayout() {
           onToggleTheme={toggleTheme}
         />
 
-        <main className="px-4 py-6 pb-24 lg:px-6 lg:pb-6">
+        <main className="px-4 py-6 pb-24 lg:px-6 lg:pb-8">
           <Outlet />
         </main>
       </div>

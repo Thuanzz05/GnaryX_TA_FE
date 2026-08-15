@@ -50,7 +50,7 @@ export default function QuizResultPage() {
       >
         {/* Hero banner */}
         <div
-          className="relative overflow-hidden px-8 py-12 text-center"
+          className="relative overflow-hidden px-4 py-8 text-center sm:px-8 sm:py-12"
           style={{ background: 'linear-gradient(135deg, var(--color-accent) 0%, oklch(46% 0.145 175) 100%)' }}
         >
           {/* Decorative circles */}
@@ -80,17 +80,17 @@ export default function QuizResultPage() {
         </div>
 
         {/* Stats + actions */}
-        <div className="p-6 sm:p-8">
-          <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="p-5 sm:p-8">
+          <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {stats.map(({ icon: Icon, label, value, color, bg }) => (
               <motion.div
                 key={label}
                 variants={item}
-                className={`flex flex-col items-center rounded-2xl p-4 ${bg}`}
+                className={`flex flex-col items-center rounded-2xl p-3 sm:p-4 ${bg}`}
               >
-                <Icon className={`mb-2 h-7 w-7 ${color}`} aria-hidden="true" />
-                <span className="text-2xl font-bold text-text-primary dark:text-slate-100">{value}</span>
-                <span className="text-sm font-medium text-text-muted dark:text-slate-500">{label}</span>
+                <Icon className={`mb-1 h-6 w-6 sm:mb-2 sm:h-7 sm:w-7 ${color}`} aria-hidden="true" />
+                <span className="text-xl font-bold text-text-primary sm:text-2xl dark:text-slate-100">{value}</span>
+                <span className="text-xs font-medium text-text-muted sm:text-sm dark:text-slate-500">{label}</span>
               </motion.div>
             ))}
           </div>
