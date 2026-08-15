@@ -1,25 +1,40 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  RotateCcw,
-  Volume2,
-} from 'lucide-react'
-import { Badge, Button, Card, Heading, ProgressBar, Text } from '@/components/common'
+import { ArrowLeft, ArrowRight, CheckCircle2, RotateCcw } from 'lucide-react'
+import { Badge, Button, Heading, ProgressBar, Text } from '@/components/common'
+import { Flashcard } from '@/components/flashcards'
 import { vocabularyService } from '@/services/vocabularyService'
-import { speakWord } from '@/utils/speech'
 import { cn } from '@/utils/cn'
 import type { VocabularyWord } from '@/types'
 
 type Rating = 'again' | 'hard' | 'good' | 'easy'
 
-const RATING_CONFIG: Record<Rating, { label: string; className: string }> = {
-  again: { label: 'Again', className: 'border-error-300 bg-error-50 text-error-700 hover:bg-error-100 dark:border-error-800 dark:bg-error-900/20 dark:text-error-400' },
-  hard:  { label: 'Hard',  className: 'border-warning-300 bg-warning-50 text-warning-700 hover:bg-warning-100 dark:border-warning-800 dark:bg-warning-900/20 dark:text-warning-400' },
-  good:  { label: 'Good',  className: 'border-primary-300 bg-primary-50 text-primary-700 hover:bg-primary-100 dark:border-primary-800 dark:bg-primary-900/20 dark:text-primary-400' },
-  easy:  { label: 'Easy',  className: 'border-success-300 bg-success-50 text-success-700 hover:bg-success-100 dark:border-success-800 dark:bg-success-900/20 dark:text-success-400' },
+const RATING_CONFIG: Record<Rating, { label: string; sub: string; className: string }> = {
+  again: {
+    label: 'Again',
+    sub: '< 1m',
+    className:
+      'border-2 border-error-100 bg-white text-error-600 hover:border-error-400 hover:bg-error-50 dark:border-error-900/60 dark:bg-surface-card-dark dark:text-error-400 dark:hover:border-error-700 dark:hover:bg-error-900/20',
+  },
+  hard: {
+    label: 'Hard',
+    sub: '6m',
+    className:
+      'border-2 border-warning-100 bg-white text-warning-600 hover:border-warning-400 hover:bg-warning-50 dark:border-warning-900/60 dark:bg-surface-card-dark dark:text-warning-400 dark:hover:border-warning-700 dark:hover:bg-warning-900/20',
+  },
+  good: {
+    label: 'Good',
+    sub: '10m',
+    className:
+      'border-2 border-success-100 bg-white text-success-600 hover:border-success-400 hover:bg-success-50 dark:border-success-900/60 dark:bg-surface-card-dark dark:text-success-400 dark:hover:border-success-700 dark:hover:bg-success-900/20',
+  },
+  easy: {
+    label: 'Easy',
+    sub: '4d',
+    className:
+      'border-2 border-primary-100 bg-white text-primary-600 hover:border-primary-400 hover:bg-primary-50 dark:border-primary-900/60 dark:bg-surface-card-dark dark:text-primary-400 dark:hover:border-primary-700 dark:hover:bg-primary-900/20',
+  },
 }
 
 export default function FlashcardsPage() {
@@ -38,23 +53,23 @@ export default function FlashcardsPage() {
   }, [])
 
   const current = cards[currentIndex]
-  const progress = cards.length > 0 ? ((currentIndex) / cards.length) * 100 : 0
+  const progress = cards.length > 0 ? (currentIndex / cards.length) * 100 : 0
 
-  const handleFlip = () => setIsFlipped((p) => !p)
-
-  const handleRate = useCallback((rating: Rating) => {
-    if (!current) return
-    setRatings((prev) => ({ ...prev, [current.id]: rating }))
-    setIsFlipped(false)
-
-    setTimeout(() => {
-      if (currentIndex + 1 >= cards.length) {
-        setSessionComplete(true)
-      } else {
-        setCurrentIndex((i) => i + 1)
-      }
-    }, 200)
-  }, [current, currentIndex, cards.length])
+  const handleRate = useCallback(
+    (rating: Rating) => {
+      if (!current) return
+      setRatings((prev) => ({ ...prev, [current.id]: rating }))
+      setIsFlipped(false)
+      setTimeout(() => {
+        if (currentIndex + 1 >= cards.length) {
+          setSessionComplete(true)
+        } else {
+          setCurrentIndex((i) => i + 1)
+        }
+      }, 200)
+    },
+    [current, currentIndex, cards.length],
+  )
 
   const handlePrev = () => {
     if (currentIndex > 0) {
@@ -77,15 +92,17 @@ export default function FlashcardsPage() {
     setRatings({})
   }
 
+  // ── Loading ──────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="h-8 w-48 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
-        <div className="h-80 animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-700" />
+        <div className="h-80 animate-pulse rounded-3xl bg-slate-200 dark:bg-slate-700" />
       </div>
     )
   }
 
+  // ── Session complete ─────────────────────────────────────
   if (sessionComplete) {
     const ratingCounts = Object.values(ratings).reduce<Record<Rating, number>>(
       (acc, r) => { acc[r] = (acc[r] ?? 0) + 1; return acc },
@@ -97,24 +114,36 @@ export default function FlashcardsPage() {
         animate={{ opacity: 1, scale: 1 }}
         className="mx-auto max-w-md space-y-6 py-8 text-center"
       >
-        <div className="text-6xl">🎉</div>
-        <Heading level="h2">Session Complete!</Heading>
-        <Text variant="muted">You reviewed all {cards.length} flashcards.</Text>
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-400">
+          <CheckCircle2 size={48} />
+        </div>
+        <Heading level="h2">Great Job! 🎉</Heading>
+        <Text variant="muted">
+          You reviewed all {cards.length} flashcards. Come back tomorrow to strengthen your memory.
+        </Text>
 
-        <Card padding="md" className="text-left">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="rounded-xl border border-border p-4 dark:border-border-dark">
+          <div className="grid grid-cols-2 gap-3">
             {(['easy', 'good', 'hard', 'again'] as Rating[]).map((r) => (
-              <div key={r} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 dark:border-border-dark">
+              <div
+                key={r}
+                className="flex items-center justify-between rounded-lg border border-border px-3 py-2 dark:border-border-dark"
+              >
                 <span className="text-body-sm capitalize text-text-secondary dark:text-slate-400">{r}</span>
                 <span className="font-semibold text-text-primary dark:text-slate-100">{ratingCounts[r]}</span>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
 
-        <Button fullWidth onClick={handleRestart} leftIcon={<RotateCcw className="h-4 w-4" />}>
-          Study Again
-        </Button>
+        <div className="flex gap-3">
+          <Button fullWidth variant="outline" leftIcon={<RotateCcw className="h-4 w-4" />} onClick={handleRestart}>
+            Study Again
+          </Button>
+          <Link to="/dashboard" className="flex-1">
+            <Button fullWidth>Dashboard</Button>
+          </Link>
+        </div>
       </motion.div>
     )
   }
@@ -125,114 +154,49 @@ export default function FlashcardsPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="mx-auto max-w-2xl space-y-6"
+      className="mx-auto max-w-2xl space-y-6 py-2"
     >
-      <header className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
           <Heading level="h1">Flashcards</Heading>
           <Text variant="muted">Business English – Vocabulary</Text>
         </div>
         <Badge variant="outline">{currentIndex + 1} / {cards.length}</Badge>
-      </header>
+      </div>
 
+      {/* Progress */}
       <ProgressBar value={progress} size="sm" />
 
       {/* Card */}
-      <div
-        className="relative cursor-pointer"
-        style={{ perspective: '1200px', height: 'clamp(260px, 45vw, 340px)' }}
-        onClick={handleFlip}
-        role="button"
-        tabIndex={0}
-        aria-label={isFlipped ? 'Show front' : 'Show back'}
-        onKeyDown={(e) => e.key === 'Enter' || e.key === ' ' ? handleFlip() : undefined}
-      >
-        <motion.div
-          className="relative h-full w-full"
-          style={{ transformStyle: 'preserve-3d' }}
-          animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
-        >
-          {/* Front */}
-          <div
-            className="absolute inset-0 rounded-2xl border border-border bg-white p-8 shadow-lg dark:border-border-dark dark:bg-surface-card-dark"
-            style={{ backfaceVisibility: 'hidden' }}
-          >
-            <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-              <Badge variant="primary">{current.level}</Badge>
-              <h2 className="text-5xl font-bold uppercase tracking-wide text-text-primary dark:text-slate-100">
-                {current.word}
-              </h2>
-              <p className="text-body text-text-secondary dark:text-slate-400">{current.phonetic}</p>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); speakWord(current.word) }}
-                className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-body-sm text-text-secondary transition-colors hover:bg-surface-muted dark:border-border-dark dark:hover:bg-slate-800"
-                aria-label="Listen"
-              >
-                <Volume2 className="h-4 w-4" /> Listen
-              </button>
-              <p className="mt-4 text-caption text-text-muted dark:text-slate-500">Click to reveal answer</p>
-            </div>
-          </div>
+      <Flashcard
+        word={current}
+        isFlipped={isFlipped}
+        onFlip={() => setIsFlipped(true)}
+      />
 
-          {/* Back */}
-          <div
-            className="absolute inset-0 rounded-2xl border border-primary-200 bg-gradient-to-br from-primary-50 to-white p-8 shadow-lg dark:border-primary-800/40 dark:from-primary-950/30 dark:to-surface-card-dark"
-            style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-          >
-            <div className="flex h-full flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-2">
-                  <Badge variant="primary">{current.level}</Badge>
-                  <Badge variant="outline" className="capitalize">{current.partOfSpeech}</Badge>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); speakWord(current.word) }}
-                  className="rounded-full p-2 text-text-muted transition-colors hover:bg-white/60 dark:text-slate-400"
-                  aria-label="Listen"
-                >
-                  <Volume2 className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="space-y-3 text-center">
-                <p className="text-2xl font-bold capitalize text-text-primary dark:text-slate-100">{current.word}</p>
-                <p className="text-body text-text-secondary dark:text-slate-300">{current.phonetic}</p>
-                <p className="text-heading-4 text-text-primary dark:text-slate-100">{current.meaning}</p>
-                <p className="text-body-sm text-primary-600 dark:text-primary-400">{current.meaningVi}</p>
-              </div>
-
-              <blockquote className="rounded-lg bg-white/60 px-4 py-3 text-center italic text-body-sm text-text-secondary dark:bg-slate-800/40 dark:text-slate-300">
-                &ldquo;{current.example}&rdquo;
-              </blockquote>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Rating buttons – only visible after flip */}
+      {/* Rating buttons — appear after flip */}
       <AnimatePresence>
         {isFlipped && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            exit={{ opacity: 0, y: 12 }}
             transition={{ duration: 0.2 }}
             className="grid grid-cols-4 gap-3"
           >
-            {(Object.entries(RATING_CONFIG) as [Rating, { label: string; className: string }][]).map(([r, cfg]) => (
+            {(Object.entries(RATING_CONFIG) as [Rating, typeof RATING_CONFIG[Rating]][]).map(([r, cfg]) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => handleRate(r)}
                 className={cn(
-                  'rounded-xl border py-3 text-body-sm font-semibold transition-all active:scale-95',
+                  'flex flex-col items-center justify-center rounded-2xl px-2 py-3 transition-all active:scale-95',
                   cfg.className,
                 )}
               >
-                {cfg.label}
+                <span className="font-semibold">{cfg.label}</span>
+                <span className="mt-0.5 text-xs opacity-60">{cfg.sub}</span>
               </button>
             ))}
           </motion.div>
@@ -250,7 +214,9 @@ export default function FlashcardsPage() {
         >
           <span className="hidden sm:inline">Previous</span>
         </Button>
-        <div className="flex items-center gap-1 overflow-hidden max-w-[160px] sm:max-w-none">
+
+        {/* Dot indicators */}
+        <div className="flex items-center gap-1">
           {cards.slice(0, 10).map((_, i) => (
             <span
               key={i}
@@ -268,6 +234,7 @@ export default function FlashcardsPage() {
             <span className="ml-1 text-caption text-text-muted">+{cards.length - 10}</span>
           )}
         </div>
+
         <Button
           variant="outline"
           size="sm"
@@ -278,13 +245,6 @@ export default function FlashcardsPage() {
           <span className="hidden sm:inline">Next</span>
         </Button>
       </div>
-
-      <Card padding="md" className="bg-surface-muted dark:bg-slate-800/50">
-        <div className="flex items-center gap-2 text-body-sm text-text-secondary dark:text-slate-400">
-          <BookOpen className="h-4 w-4 shrink-0" />
-          <span>Rate each card to track your progress. Cards rated <strong className="text-text-primary dark:text-slate-200">Again</strong> or <strong className="text-text-primary dark:text-slate-200">Hard</strong> will appear more often.</span>
-        </div>
-      </Card>
     </motion.div>
   )
 }

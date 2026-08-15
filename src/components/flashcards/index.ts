@@ -1,2 +1,1 @@
-// Flashcard components — Phase 8+
-export {}
+export { Flashcard } from './Flashcard'
