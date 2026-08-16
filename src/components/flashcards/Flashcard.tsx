@@ -56,7 +56,7 @@ export function Flashcard({ word, isFlipped, onFlip }: FlashcardProps) {
 
         {/* ── Back ── */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center rounded-3xl border border-primary-200 bg-gradient-to-br from-primary-50 to-white p-5 shadow-lg sm:p-6 dark:border-primary-800/40 dark:from-primary-950/30 dark:to-surface-card-dark"
+          className="absolute inset-0 flex flex-col items-center justify-center rounded-3xl border border-primary-200 bg-linear-to-br from-primary-50 to-white p-5 shadow-lg sm:p-6 dark:border-primary-800/40 dark:from-primary-950/30 dark:to-surface-card-dark"
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
           <div className="flex h-full w-full flex-col items-center overflow-y-auto text-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

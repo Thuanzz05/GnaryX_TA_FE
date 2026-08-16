@@ -164,7 +164,7 @@ export default function HelpPage() {
 
       {/* Contact */}
       <Card
-        className="bg-gradient-to-br from-primary-50 to-white dark:from-primary-950/30 dark:to-surface-card-dark"
+        className="bg-linear-to-br from-primary-50 to-white dark:from-primary-950/30 dark:to-surface-card-dark"
         padding="lg"
       >
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">

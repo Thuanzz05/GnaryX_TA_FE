@@ -71,7 +71,7 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className={cn(
-              'relative z-10 w-full rounded-[var(--radius-card)] bg-surface-light shadow-modal dark:bg-surface-card-dark',
+              'relative z-10 w-full rounded-card bg-surface-light shadow-modal dark:bg-surface-card-dark',
               sizeStyles[size],
             )}
           >

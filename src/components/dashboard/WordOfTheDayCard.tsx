@@ -38,7 +38,7 @@ export function WordOfTheDayCard({ word }: WordOfTheDayCardProps) {
       transition={{ duration: 0.4, delay: 0.15 }}
     >
       <Card
-        className="border-accent-purple/20 bg-gradient-to-br from-violet-50/80 to-white dark:from-violet-950/20 dark:to-surface-card-dark"
+        className="border-accent-purple/20 bg-linear-to-br from-violet-50/80 to-white dark:from-violet-950/20 dark:to-surface-card-dark"
         padding="md"
       >
         <CardHeader className="mb-3">

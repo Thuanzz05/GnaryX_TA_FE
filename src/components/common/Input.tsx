@@ -59,7 +59,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
             }
             className={cn(
-              'h-10 w-full rounded-[var(--radius-input)] border bg-surface-light px-3 text-sm text-text-primary',
+              'h-10 w-full rounded-input border bg-surface-light px-3 text-sm text-text-primary',
               'placeholder:text-text-muted transition-colors duration-150',
               'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
               'disabled:cursor-not-allowed disabled:opacity-50',
@@ -122,7 +122,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           required={required}
           aria-invalid={!!error}
           className={cn(
-            'min-h-24 w-full rounded-[var(--radius-input)] border bg-surface-light px-3 py-2 text-sm text-text-primary',
+            'min-h-24 w-full rounded-input border bg-surface-light px-3 py-2 text-sm text-text-primary',
             'placeholder:text-text-muted transition-colors duration-150 resize-y',
             'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
             'dark:border-border-dark dark:bg-surface-card-dark dark:text-slate-100',
@@ -216,7 +216,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           required={required}
           aria-invalid={!!error}
           className={cn(
-            'h-10 w-full rounded-[var(--radius-input)] border bg-surface-light px-3 text-sm text-text-primary',
+            'h-10 w-full rounded-input border bg-surface-light px-3 text-sm text-text-primary',
             'focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20',
             'dark:border-border-dark dark:bg-surface-card-dark dark:text-slate-100',
             error ? 'border-error-500' : 'border-border',

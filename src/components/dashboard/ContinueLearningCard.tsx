@@ -18,7 +18,7 @@ export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
       transition={{ duration: 0.4, delay: 0.1 }}
     >
       <div
-        className="overflow-hidden rounded-[--radius-card] shadow-[--shadow-raised]"
+        className="overflow-hidden rounded-card shadow-raised"
         style={{ background: 'linear-gradient(135deg, var(--color-accent) 0%, oklch(46% 0.145 175) 100%)' }}
       >
         <div className="flex flex-col lg:flex-row">
@@ -26,7 +26,7 @@ export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
             {/* Header */}
             <div className="mb-4">
               <span
-                className="inline-flex items-center rounded-[--radius-badge] border px-2.5 py-0.5 text-xs font-medium"
+                className="inline-flex items-center rounded-badge border px-2.5 py-0.5 text-xs font-medium"
                 style={{ borderColor: 'oklch(99% 0.005 175 / 0.3)', color: 'var(--color-accent-ink)', background: 'oklch(99% 0.005 175 / 0.1)' }}
               >
                 Continue Learning
@@ -56,7 +56,7 @@ export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
               </p>
               <Link
                 to={`/learn/${data.courseId}`}
-                className="mt-2 inline-flex w-fit items-center gap-2 rounded-[--radius-button] border px-4 py-2 text-sm font-medium transition-colors"
+                className="mt-2 inline-flex w-fit items-center gap-2 rounded-button border px-4 py-2 text-sm font-medium transition-colors"
                 style={{
                   borderColor: 'oklch(99% 0.005 175 / 0.4)',
                   color: 'var(--color-accent-ink)',

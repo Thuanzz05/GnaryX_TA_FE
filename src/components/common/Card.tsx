@@ -40,7 +40,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        'rounded-[var(--radius-card)]',
+        'rounded-card',
         variantStyles[variant],
         paddingStyles[padding],
         hoverable &&

@@ -59,7 +59,7 @@ function ToastItem({
       exit={{ opacity: 0, x: 60, scale: 0.95 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
       className={cn(
-        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-[var(--radius-card)] border p-4 shadow-card-hover',
+        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-card border p-4 shadow-card-hover',
         'bg-surface-light dark:bg-surface-card-dark',
         styleMap[toast.type],
       )}
@@ -114,7 +114,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ toasts, toast, dismiss }}>
       {children}
       <div
-        className="pointer-events-none fixed right-4 top-4 z-[100] flex flex-col gap-2"
+        className="pointer-events-none fixed right-4 top-4 z-100 flex flex-col gap-2"
         aria-label="Notifications"
       >
         <AnimatePresence mode="popLayout">

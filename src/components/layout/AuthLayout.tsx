@@ -37,7 +37,7 @@ export function AuthLayout() {
       {/* Brand panel — desktop only */}
       <aside className="relative hidden w-[45%] overflow-hidden lg:flex lg:flex-col lg:justify-between">
         <div
-          className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900"
+          className="absolute inset-0 bg-linear-to-br from-primary-600 via-primary-700 to-primary-900"
           aria-hidden="true"
         />
         <div

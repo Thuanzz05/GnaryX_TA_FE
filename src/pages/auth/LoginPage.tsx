@@ -103,7 +103,7 @@ export default function LoginPage() {
 
       {errors.form && (
         <div
-          className="mb-6 rounded-[var(--radius-card)] border border-error-500/30 bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-900/20 dark:text-error-400"
+          className="mb-6 rounded-card border border-error-500/30 bg-error-50 px-4 py-3 text-sm text-error-700 dark:bg-error-900/20 dark:text-error-400"
           role="alert"
         >
           {errors.form}

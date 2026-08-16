@@ -44,7 +44,7 @@ export function GlobalSearch() {
   return (
     <div className="relative w-full max-w-lg" ref={searchRef}>
       <div
-        className={`relative flex h-10 w-full items-center rounded-full border transition-all z-[51] ${
+        className={`relative z-51 flex h-10 w-full items-center rounded-full border transition-all ${
           isOpen
             ? 'border-indigo-500 bg-white ring-4 ring-indigo-50 dark:bg-gray-900 dark:ring-indigo-900/20'
             : 'border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50'
@@ -77,7 +77,7 @@ export function GlobalSearch() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-[calc(100%+8px)] z-[50] flex max-h-[70vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 sm:max-h-[380px]"
+            className="absolute left-0 top-[calc(100%+8px)] z-50 flex max-h-[70vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 sm:max-h-[380px]"
           >
             <div className="overflow-y-auto">
               {!query ? (

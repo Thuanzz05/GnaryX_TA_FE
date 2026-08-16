@@ -41,7 +41,7 @@ function NavLink({
       title={collapsed ? item.label : undefined}
       className={cn(
         'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[0.8125rem] font-medium transition-all',
-        'duration-[var(--dur-short)]',
+        'duration-(--dur-short)',
         active
           ? 'bg-accent-subtle text-accent'
           : 'text-ink-2 hover:bg-paper-3 hover:text-ink',
@@ -52,13 +52,13 @@ function NavLink({
       {active && (
         <motion.span
           layoutId="sidebar-active"
-          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent"
+          className="absolute left-0 top-1/2 h-5 w-0.75 -translate-y-1/2 rounded-r-full bg-accent"
           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
         />
       )}
       <Icon
         className={cn(
-          'h-[18px] w-[18px] shrink-0 transition-colors',
+          'h-4.5 w-4.5 shrink-0 transition-colors',
           active
             ? 'text-accent'
             : 'text-ink-3 group-hover:text-ink-2',
@@ -89,7 +89,7 @@ export function Sidebar({ user, mobileOpen = false, onMobileClose, collapsed = f
       ref={sidebarRef}
       className={cn(
         'flex h-full flex-col bg-sidebar border-r border-rule',
-        collapsed ? 'w-[68px]' : 'w-[260px]',
+        collapsed ? 'w-17' : 'w-65',
       )}
     >
       {/* Logo area — tighter, cleaner */}

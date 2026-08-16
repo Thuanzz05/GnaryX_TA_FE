@@ -19,7 +19,7 @@ interface DailyGoalCardProps {
 export function DailyGoalCard({ goal }: DailyGoalCardProps) {
   return (
     <Card
-      className="relative overflow-hidden border-primary-200 bg-gradient-to-br from-primary-50 to-white dark:border-primary-800/50 dark:from-primary-950/30 dark:to-surface-card-dark"
+      className="relative overflow-hidden border-primary-200 bg-linear-to-br from-primary-50 to-white dark:border-primary-800/50 dark:from-primary-950/30 dark:to-surface-card-dark"
       padding="lg"
     >
       <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary-100/50 dark:bg-primary-900/20" />

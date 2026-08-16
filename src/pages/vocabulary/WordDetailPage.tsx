@@ -239,7 +239,7 @@ export default function WordDetailPage() {
 
       {/* Practice CTA */}
       <Card
-        className="bg-gradient-to-br from-primary-50 to-white text-center dark:from-primary-950/30 dark:to-surface-card-dark"
+        className="bg-linear-to-br from-primary-50 to-white text-center dark:from-primary-950/30 dark:to-surface-card-dark"
         padding="lg"
       >
         <BookOpen className="mx-auto mb-3 h-8 w-8 text-primary-500" aria-hidden="true" />
