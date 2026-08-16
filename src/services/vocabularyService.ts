@@ -1,9 +1,5 @@
 import type { VocabularyWord, CEFRLevel, PartOfSpeech, Difficulty } from '@/types'
-import { MOCK_VOCABULARY } from '@/data'
-
-function delay(ms = 500): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
+import { apiFetch } from './api'
 
 export interface VocabularyFilters {
   search?: string
@@ -17,80 +13,84 @@ export interface VocabularyFilters {
 
 export const vocabularyService = {
   async getAll(filters?: VocabularyFilters): Promise<VocabularyWord[]> {
-    await delay()
-    
-    let filtered = [...MOCK_VOCABULARY]
+    const params = new URLSearchParams()
 
-    if (filters?.search) {
-      const search = filters.search.toLowerCase()
-      filtered = filtered.filter(
-        (word) =>
-          word.word.toLowerCase().includes(search) ||
-          word.meaning.toLowerCase().includes(search) ||
-          word.meaningVi.toLowerCase().includes(search),
-      )
+    if (filters?.search) params.set('search', filters.search)
+    if (filters?.level && filters.level !== 'All') params.set('level', filters.level)
+    if (filters?.topic && filters.topic !== 'All') params.set('topic', filters.topic)
+    if (filters?.partOfSpeech && filters.partOfSpeech !== 'All') params.set('partOfSpeech', filters.partOfSpeech)
+    if (filters?.difficulty && filters.difficulty !== 'All') params.set('difficulty', filters.difficulty)
+    if (filters?.learned && filters.learned !== 'All') params.set('learned', filters.learned)
+    if (filters?.favorite) params.set('favorite', 'true')
+
+    try {
+      const data = await apiFetch<any[]>(`/vocabulary${params.toString() ? `?${params.toString()}` : ''}`)
+      return data.map((item) => ({
+        id: item.id,
+        word: item.word,
+        phonetic: item.phonetic || '',
+        partOfSpeech: item.part_of_speech,
+        meaning: item.meaning,
+        meaningVi: item.meaning_vi,
+        example: item.example_text,
+        exampleVi: item.example_vi || '',
+        synonyms: Array.isArray(item.synonyms) ? item.synonyms : [],
+        antonyms: Array.isArray(item.antonyms) ? item.antonyms : [],
+        wordFamily: Array.isArray(item.word_family) ? item.word_family : [],
+        collocations: Array.isArray(item.collocations) ? item.collocations : [],
+        level: item.level,
+        topic: item.topic,
+        difficulty: item.difficulty,
+        isLearned: item.is_learned ?? false,
+        isFavorite: item.is_favorite ?? false,
+      }))
+    } catch {
+      return []
     }
-
-    if (filters?.level && filters.level !== 'All') {
-      filtered = filtered.filter((word) => word.level === filters.level)
-    }
-
-    if (filters?.topic && filters.topic !== 'All') {
-      filtered = filtered.filter((word) => word.topic === filters.topic)
-    }
-
-    if (filters?.partOfSpeech && filters.partOfSpeech !== 'All') {
-      filtered = filtered.filter((word) => word.partOfSpeech === filters.partOfSpeech)
-    }
-
-    if (filters?.difficulty && filters.difficulty !== 'All') {
-      filtered = filtered.filter((word) => word.difficulty === filters.difficulty)
-    }
-
-    if (filters?.learned === 'Learned') {
-      filtered = filtered.filter((word) => word.isLearned)
-    } else if (filters?.learned === 'Not Learned') {
-      filtered = filtered.filter((word) => !word.isLearned)
-    }
-
-    if (filters?.favorite) {
-      filtered = filtered.filter((word) => word.isFavorite)
-    }
-
-    return filtered
   },
 
   async getById(id: string): Promise<VocabularyWord | null> {
-    await delay()
-    const word = MOCK_VOCABULARY.find((w) => w.id === id)
-    return word ? { ...word } : null
+    try {
+      const item = await apiFetch<any>(`/vocabulary/${id}`)
+      if (!item) return null
+
+      return {
+        id: item.id,
+        word: item.word,
+        phonetic: item.phonetic || '',
+        partOfSpeech: item.part_of_speech,
+        meaning: item.meaning,
+        meaningVi: item.meaning_vi,
+        example: item.example_text,
+        exampleVi: item.example_vi || '',
+        synonyms: Array.isArray(item.synonyms) ? item.synonyms : [],
+        antonyms: Array.isArray(item.antonyms) ? item.antonyms : [],
+        wordFamily: Array.isArray(item.word_family) ? item.word_family : [],
+        collocations: Array.isArray(item.collocations) ? item.collocations : [],
+        level: item.level,
+        topic: item.topic,
+        difficulty: item.difficulty,
+        isLearned: item.is_learned ?? false,
+        isFavorite: item.is_favorite ?? false,
+      }
+    } catch {
+      return null
+    }
   },
 
   async search(query: string): Promise<VocabularyWord[]> {
-    await delay()
-    const search = query.toLowerCase()
-    return MOCK_VOCABULARY.filter(
-      (word) =>
-        word.word.toLowerCase().includes(search) ||
-        word.meaning.toLowerCase().includes(search),
-    )
+    return this.getAll({ search: query })
   },
 
   async toggleFavorite(id: string): Promise<VocabularyWord> {
-    await delay(300)
-    const word = MOCK_VOCABULARY.find((w) => w.id === id)
+    const word = await this.getById(id)
     if (!word) throw new Error('Word not found')
-    
-    word.isFavorite = !word.isFavorite
-    return { ...word }
+    return { ...word, isFavorite: !word.isFavorite }
   },
 
   async markAsLearned(id: string): Promise<VocabularyWord> {
-    await delay(300)
-    const word = MOCK_VOCABULARY.find((w) => w.id === id)
+    const word = await this.getById(id)
     if (!word) throw new Error('Word not found')
-    
-    word.isLearned = true
-    return { ...word }
+    return { ...word, isLearned: true }
   },
 }

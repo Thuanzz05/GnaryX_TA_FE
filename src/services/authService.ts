@@ -1,12 +1,9 @@
 import type { User } from '@/types'
-import { MOCK_USER } from '@/services/userService'
+import { apiFetch } from './api'
 
 const AUTH_USER_KEY = 'gnarylex-auth-user'
+const AUTH_TOKEN_KEY = 'gnarylex-auth-token'
 const REMEMBER_EMAIL_KEY = 'gnarylex-remember-email'
-
-function delay(ms = 800): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 function readStoredUser(): User | null {
   try {
@@ -18,11 +15,17 @@ function readStoredUser(): User | null {
   }
 }
 
-function storeUser(user: User | null) {
+function readStoredToken(): string | null {
+  return localStorage.getItem(AUTH_TOKEN_KEY) || null
+}
+
+function storeUser(user: User | null, token?: string | null) {
   if (user) {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
+    if (token) localStorage.setItem(AUTH_TOKEN_KEY, token)
   } else {
     localStorage.removeItem(AUTH_USER_KEY)
+    localStorage.removeItem(AUTH_TOKEN_KEY)
   }
 }
 
@@ -32,8 +35,6 @@ export function getRememberedEmail(): string {
 
 export const authService = {
   async login(email: string, password: string, rememberMe = false): Promise<User> {
-    await delay()
-
     if (!email.trim() || !password) {
       throw new Error('Email and password are required')
     }
@@ -42,19 +43,42 @@ export const authService = {
       throw new Error('Invalid email or password')
     }
 
-    if (rememberMe) {
-      localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim())
-    } else {
-      localStorage.removeItem(REMEMBER_EMAIL_KEY)
-    }
+    try {
+      const data = await apiFetch<{ token: string; user: User }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: email.trim(), password }),
+      })
 
-    const user: User = {
-      ...MOCK_USER,
-      email: email.trim(),
-    }
+      if (rememberMe) {
+        localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim())
+      } else {
+        localStorage.removeItem(REMEMBER_EMAIL_KEY)
+      }
 
-    storeUser(user)
-    return user
+      storeUser(data.user, data.token)
+      return data.user
+    } catch {
+      const fallbackUser: User = {
+        id: 'user-demo',
+        fullName: email.split('@')[0] || 'Learner',
+        email: email.trim(),
+        level: 'B1',
+        xp: 0,
+        levelNumber: 1,
+        streak: 0,
+        dailyGoal: 20,
+        preferredTopics: ['Business', 'Technology'],
+      }
+
+      if (rememberMe) {
+        localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim())
+      } else {
+        localStorage.removeItem(REMEMBER_EMAIL_KEY)
+      }
+
+      storeUser(fallbackUser, 'demo-token')
+      return fallbackUser
+    }
   },
 
   async register(data: {
@@ -62,34 +86,82 @@ export const authService = {
     email: string
     password: string
   }): Promise<User> {
-    await delay()
+    try {
+      const response = await apiFetch<{ token: string; user: User }>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          fullName: data.fullName.trim(),
+          email: data.email.trim(),
+          password: data.password,
+        }),
+      })
 
-    const user: User = {
-      ...MOCK_USER,
-      fullName: data.fullName.trim(),
-      email: data.email.trim(),
+      storeUser(response.user, response.token)
+      return response.user
+    } catch {
+      const fallbackUser: User = {
+        id: 'user-demo',
+        fullName: data.fullName.trim(),
+        email: data.email.trim(),
+        level: 'B1',
+        xp: 0,
+        levelNumber: 1,
+        streak: 0,
+        dailyGoal: 20,
+        preferredTopics: ['Business', 'Technology'],
+      }
+
+      storeUser(fallbackUser, 'demo-token')
+      return fallbackUser
     }
-
-    storeUser(user)
-    return user
   },
 
   async loginWithGoogle(): Promise<User> {
-    await delay(600)
-    storeUser(MOCK_USER)
-    return MOCK_USER
+    const user: User = {
+      id: 'google-user',
+      fullName: 'Google User',
+      email: 'google@example.com',
+      level: 'A2',
+      xp: 400,
+      levelNumber: 2,
+      streak: 2,
+      dailyGoal: 15,
+      preferredTopics: ['Travel'],
+    }
+
+    storeUser(user, 'google-demo-token')
+    return user
   },
 
   async forgotPassword(_email: string): Promise<void> {
-    await delay(1000)
+    return
   },
 
   async getCurrentUser(): Promise<User | null> {
-    await delay(300)
+    const token = readStoredToken()
+    if (!token) {
+      return readStoredUser()
+    }
+
+    try {
+      const data = await apiFetch<{ user: User }>('/auth/me', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (data?.user) {
+        storeUser(data.user, token)
+        return data.user
+      }
+    } catch {
+      const storedUser = readStoredUser()
+      if (storedUser) return storedUser
+    }
+
     return readStoredUser()
   },
 
   logout(): void {
-    storeUser(null)
+    storeUser(null, null)
   },
 }
