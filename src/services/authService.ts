@@ -1,31 +1,64 @@
 import type { User } from '@/types'
-import { apiFetch } from './api'
+import { api } from './api'
 
 const AUTH_USER_KEY = 'gnarylex-auth-user'
 const AUTH_TOKEN_KEY = 'gnarylex-auth-token'
 const REMEMBER_EMAIL_KEY = 'gnarylex-remember-email'
+const ACCESS_TOKEN_KEY = 'accessToken'
+const REFRESH_TOKEN_KEY = 'refreshToken'
+const USER_KEY = 'user'
+
+function normalizeUser(raw: any): User | null {
+  if (!raw || typeof raw !== 'object') return null
+
+  return {
+    id: raw.id || 'user-demo',
+    fullName: raw.fullName || raw.name || raw.full_name || 'Learner',
+    email: raw.email || '',
+    avatar: raw.avatar,
+    level: raw.level || 'A1',
+    xp: Number(raw.xp || 0),
+    levelNumber: Number(raw.levelNumber || raw.level_number || 1),
+    streak: Number(raw.streak || 0),
+    dailyGoal: Number(raw.dailyGoal || raw.daily_goal || 20),
+    preferredTopics: Array.isArray(raw.preferredTopics) ? raw.preferredTopics : [],
+  }
+}
 
 function readStoredUser(): User | null {
   try {
-    const raw = localStorage.getItem(AUTH_USER_KEY)
+    const raw = localStorage.getItem(USER_KEY) || localStorage.getItem(AUTH_USER_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as User
+    return normalizeUser(JSON.parse(raw))
   } catch {
     return null
   }
 }
 
 function readStoredToken(): string | null {
-  return localStorage.getItem(AUTH_TOKEN_KEY) || null
+  return localStorage.getItem(ACCESS_TOKEN_KEY) || localStorage.getItem(AUTH_TOKEN_KEY) || null
 }
 
-function storeUser(user: User | null, token?: string | null) {
+function storeUser(user: User | null, accessToken?: string | null, refreshToken?: string | null) {
   if (user) {
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
-    if (token) localStorage.setItem(AUTH_TOKEN_KEY, token)
+    const normalizedUser = normalizeUser(user)
+    if (normalizedUser) {
+      localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser))
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(normalizedUser))
+    }
+    if (accessToken) {
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
+      localStorage.setItem(AUTH_TOKEN_KEY, accessToken)
+    }
+    if (refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+    }
   } else {
+    localStorage.removeItem(USER_KEY)
     localStorage.removeItem(AUTH_USER_KEY)
     localStorage.removeItem(AUTH_TOKEN_KEY)
+    localStorage.removeItem(ACCESS_TOKEN_KEY)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
   }
 }
 
@@ -39,46 +72,26 @@ export const authService = {
       throw new Error('Email and password are required')
     }
 
-    if (password.length < 8) {
-      throw new Error('Invalid email or password')
+    const response = await api.post('/auth/login', {
+      email: email.trim(),
+      password,
+    })
+
+    if (rememberMe) {
+      localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim())
+    } else {
+      localStorage.removeItem(REMEMBER_EMAIL_KEY)
     }
 
-    try {
-      const data = await apiFetch<{ token: string; user: User }>('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email: email.trim(), password }),
-      })
-
-      if (rememberMe) {
-        localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim())
-      } else {
-        localStorage.removeItem(REMEMBER_EMAIL_KEY)
-      }
-
-      storeUser(data.user, data.token)
-      return data.user
-    } catch {
-      const fallbackUser: User = {
-        id: 'user-demo',
-        fullName: email.split('@')[0] || 'Learner',
-        email: email.trim(),
-        level: 'B1',
-        xp: 0,
-        levelNumber: 1,
-        streak: 0,
-        dailyGoal: 20,
-        preferredTopics: ['Business', 'Technology'],
-      }
-
-      if (rememberMe) {
-        localStorage.setItem(REMEMBER_EMAIL_KEY, email.trim())
-      } else {
-        localStorage.removeItem(REMEMBER_EMAIL_KEY)
-      }
-
-      storeUser(fallbackUser, 'demo-token')
-      return fallbackUser
+    const user = normalizeUser(response.data.user)
+    const accessToken = response.data.accessToken as string
+    const refreshToken = response.data.refreshToken as string
+    if (!user) {
+      throw new Error('Invalid user data received from server')
     }
+
+    storeUser(user, accessToken, refreshToken)
+    return user
   },
 
   async register(data: {
@@ -86,34 +99,19 @@ export const authService = {
     email: string
     password: string
   }): Promise<User> {
-    try {
-      const response = await apiFetch<{ token: string; user: User }>('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({
-          fullName: data.fullName.trim(),
-          email: data.email.trim(),
-          password: data.password,
-        }),
-      })
+    const response = await api.post('/auth/register', {
+      fullName: data.fullName.trim(),
+      email: data.email.trim(),
+      password: data.password,
+    })
 
-      storeUser(response.user, response.token)
-      return response.user
-    } catch {
-      const fallbackUser: User = {
-        id: 'user-demo',
-        fullName: data.fullName.trim(),
-        email: data.email.trim(),
-        level: 'B1',
-        xp: 0,
-        levelNumber: 1,
-        streak: 0,
-        dailyGoal: 20,
-        preferredTopics: ['Business', 'Technology'],
-      }
-
-      storeUser(fallbackUser, 'demo-token')
-      return fallbackUser
+    const user = normalizeUser(response.data.user)
+    if (user) {
+      storeUser(user, response.data.accessToken, response.data.refreshToken)
+      return user
     }
+
+    return readStoredUser() as User
   },
 
   async loginWithGoogle(): Promise<User> {
@@ -129,7 +127,7 @@ export const authService = {
       preferredTopics: ['Travel'],
     }
 
-    storeUser(user, 'google-demo-token')
+    storeUser(user, 'google-demo-token', 'google-demo-refresh-token')
     return user
   },
 
@@ -144,14 +142,16 @@ export const authService = {
     }
 
     try {
-      const data = await apiFetch<{ user: User }>('/auth/me', {
+      const response = await api.get('/auth/me', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      if (data?.user) {
-        storeUser(data.user, token)
-        return data.user
+
+      const user = normalizeUser(response.data.user)
+      if (user) {
+        storeUser(user, token)
+        return user
       }
     } catch {
       const storedUser = readStoredUser()
@@ -162,6 +162,7 @@ export const authService = {
   },
 
   logout(): void {
-    storeUser(null, null)
+    storeUser(null, null, null)
+    window.location.href = '/login'
   },
 }

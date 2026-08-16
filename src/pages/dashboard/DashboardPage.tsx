@@ -40,7 +40,7 @@ export default function DashboardPage() {
     )
   }
 
-  const firstName = user?.fullName.split(' ')[0] ?? 'Learner'
+  const firstName = user?.fullName?.split(' ')[0] ?? 'Learner'
 
   return (
     <motion.div
