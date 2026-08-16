@@ -1,2 +1,1 @@
-// Dashboard page — Phase 5+
-export {}
+export { default as DashboardPage } from './DashboardPage';

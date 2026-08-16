@@ -1,2 +1,1 @@
-// Favorites page — Phase 13+
-export {}
+export { default as FavoritesPage } from './FavoritesPage';

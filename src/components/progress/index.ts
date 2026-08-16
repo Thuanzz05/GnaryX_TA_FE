@@ -1,2 +1,2 @@
-export { CEFRProgress } from './CEFRProgress'
-export { WordsLearnedChart } from './WordsLearnedChart'
+export * from './WordsLearnedChart'
+export * from './CEFRProgress'

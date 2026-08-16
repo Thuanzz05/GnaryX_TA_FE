@@ -1,1 +1,1 @@
-export { Flashcard } from './Flashcard'
+export * from './Flashcard'

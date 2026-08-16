@@ -1,2 +1,1 @@
-// Flashcards page — Phase 8+
-export {}
+export { default as FlashcardsPage } from './FlashcardsPage';

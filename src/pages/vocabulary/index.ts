@@ -1,2 +1,2 @@
-// Vocabulary pages — Phase 6+
-export {}
+export { default as VocabularyPage } from './VocabularyPage';
+export { default as WordDetailPage } from './WordDetailPage';

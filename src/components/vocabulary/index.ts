@@ -1,2 +1,2 @@
-export { VocabularyListItem } from './VocabularyListItem'
-export { VocabularyFilters } from './VocabularyFilters'
+export * from './VocabularyFilters'
+export * from './VocabularyListItem'

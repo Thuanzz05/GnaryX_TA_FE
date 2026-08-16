@@ -1,2 +1,1 @@
-// Settings page — Phase 14+
-export {}
+export { default as SettingsPage } from './SettingsPage';

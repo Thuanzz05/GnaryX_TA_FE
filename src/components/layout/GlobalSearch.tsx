@@ -1,43 +1,142 @@
-import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, X, History } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
-const POPULAR_SEARCHES = ['Resilient', 'Achieve', 'Strategy', 'Collaborate'];
+const MOCK_VOCABULARY = [
+  { id: 'abandon', word: 'abandon', phonetic: '/əˈbændən/', level: 'B2', meaning: 'to leave completely', vi: 'từ bỏ' },
+  { id: 'ability', word: 'ability', phonetic: '/əˈbɪləti/', level: 'A2', meaning: 'power or skill to do something', vi: 'khả năng' },
+  { id: 'achieve', word: 'achieve', phonetic: '/əˈtʃiːv/', level: 'B1', meaning: 'to successfully reach a goal', vi: 'đạt được' },
+  { id: 'collaborate', word: 'collaborate', phonetic: '/kəˈlæbəreɪt/', level: 'C1', meaning: 'work jointly on an activity', vi: 'hợp tác' },
+  { id: 'flexible', word: 'flexible', phonetic: '/ˈfleksəbl/', level: 'B2', meaning: 'able to change or be changed easily', vi: 'linh hoạt' },
+  { id: 'resilient', word: 'resilient', phonetic: '/rɪˈzɪliənt/', level: 'C1', meaning: 'able to withstand or recover quickly', vi: 'kiên cường' },
+  { id: 'strategy', word: 'strategy', phonetic: '/ˈstrætədʒi/', level: 'B2', meaning: 'a plan of action', vi: 'chiến lược' },
+];
+
+const POPULAR_SEARCHES = ['resilient', 'achieve', 'strategy', 'collaborate', 'flexible'];
 
 export function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const searchRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredResults = query
+    ? MOCK_VOCABULARY.filter((item) => item.word.toLowerCase().includes(query.toLowerCase()))
+    : [];
+
+  const handleSelectWord = (wordId: string) => {
+    setIsOpen(false);
+    setQuery('');
+    navigate(`/vocabulary/${wordId}`);
+  };
 
   return (
-    <div className="relative w-full max-w-lg">
-      <div className="relative flex h-10 w-full items-center rounded-full border border-gray-200 bg-gray-50 px-4 dark:border-gray-700 dark:bg-gray-800">
-        <Search size={18} className="text-gray-400" />
+    <div className="relative w-full max-w-lg" ref={searchRef}>
+      <div
+        className={`relative flex h-10 w-full items-center rounded-full border transition-all z-[51] ${
+          isOpen
+            ? 'border-indigo-500 bg-white ring-4 ring-indigo-50 dark:bg-gray-900 dark:ring-indigo-900/20'
+            : 'border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/50'
+        }`}
+      >
+        <Search size={18} className="ml-4 shrink-0 text-gray-400" />
         <input
           type="text"
           placeholder="Search vocabulary..."
-          className="w-full border-none bg-transparent px-3 text-sm text-gray-700 outline-none placeholder:text-gray-400 focus:ring-0 dark:text-slate-100"
+          className="w-full border-none bg-transparent px-3 text-sm text-gray-900 outline-none focus:ring-0 placeholder:text-gray-400 dark:text-white"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          onBlur={() => setTimeout(() => setIsOpen(false), 200)}
         />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            className="mr-3 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
-      {isOpen && (
-        <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-900">
-          <div className="p-4">
-            <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
-              Popular Searches
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {POPULAR_SEARCHES.map((term) => (
-                <span
-                  key={term}
-                  className="cursor-pointer rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:bg-gray-800 dark:text-slate-300 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-300"
-                >
-                  {term}
-                </span>
-              ))}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 top-[calc(100%+8px)] z-[50] flex max-h-[70vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 sm:max-h-[380px]"
+          >
+            <div className="overflow-y-auto">
+              {!query ? (
+                <div className="p-4">
+                  <h4 className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-gray-400">
+                    <History size={14} /> Popular Searches
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {POPULAR_SEARCHES.map((term) => (
+                      <button
+                        key={term}
+                        type="button"
+                        onClick={() => handleSelectWord(term)}
+                        className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 transition-all hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-2">
+                  <h4 className="mb-2 px-2 pt-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                    Dictionary Suggestions
+                  </h4>
+                  {filteredResults.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-gray-500">
+                      No vocabulary found for "<span className="font-semibold text-gray-900 dark:text-white">{query}</span>"
+                    </div>
+                  ) : (
+                    filteredResults.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleSelectWord(item.id)}
+                        className="group flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <div className="flex flex-col pr-4">
+                          <div className="flex items-center gap-2">
+                            <Search size={14} className="text-gray-400 transition-colors group-hover:text-indigo-500" />
+                            <span className="font-semibold text-gray-900 dark:text-white">{item.word}</span>
+                            <span className="hidden text-xs font-mono text-gray-500 sm:inline-block">{item.phonetic}</span>
+                          </div>
+                          <div className="mt-0.5 ml-6 line-clamp-1 text-sm text-gray-500">
+                            {item.meaning} <span className="italic text-gray-400">({item.vi})</span>
+                          </div>
+                        </div>
+                        <span className="shrink-0 rounded-lg bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                          {item.level}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

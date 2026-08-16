@@ -1,2 +1,1 @@
-// Practice pages — Phase 9+
-export {}
+export { default as PracticePage } from './PracticePage';

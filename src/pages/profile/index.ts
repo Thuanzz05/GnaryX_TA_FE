@@ -1,2 +1,1 @@
-// Profile page — Phase 14+
-export {}
+export { default as ProfilePage } from './ProfilePage';
