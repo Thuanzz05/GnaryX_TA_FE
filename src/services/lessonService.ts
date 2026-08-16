@@ -4,7 +4,7 @@ import { api } from './api'
 export const lessonService = {
   async getByCourseId(courseId: string): Promise<Lesson[]> {
     try {
-      const response = await api.get<any>(`/api/courses/${courseId}`)
+      const response = await api.get<any>(`/courses/${courseId}`)
       return response.data?.lessons || []
     } catch (error) {
       console.error('Failed to fetch lessons:', error)
@@ -14,7 +14,7 @@ export const lessonService = {
 
   async getById(lessonId: string): Promise<Lesson | null> {
     try {
-      const response = await api.get<any>(`/api/lessons/${lessonId}`)
+      const response = await api.get<any>(`/lessons/${lessonId}`)
       return response.data || null
     } catch (error) {
       console.error('Failed to fetch lesson:', error)
@@ -24,7 +24,7 @@ export const lessonService = {
 
   async updateProgress(lessonId: string, progress: number, status: string) {
     try {
-      const response = await api.post(`/api/lessons/${lessonId}/progress`, {
+      const response = await api.post(`/lessons/${lessonId}/progress`, {
         progress,
         status,
       })

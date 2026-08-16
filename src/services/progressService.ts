@@ -1,10 +1,55 @@
-import type { DashboardData } from '@/types'
+import type { DashboardData, VocabularyWord, LearningPlanItem } from '@/types'
 import { api } from './api'
+
+const mapWord = (item: any): VocabularyWord => ({
+  id: item.id,
+  word: item.word,
+  phonetic: item.phonetic || '',
+  partOfSpeech: item.part_of_speech || item.partOfSpeech || 'noun',
+  meaning: item.meaning,
+  meaningVi: item.meaning_vi || item.meaningVi || '',
+  example: item.example_text || item.example || '',
+  exampleVi: item.example_vi || item.exampleVi || '',
+  synonyms: Array.isArray(item.synonyms) ? item.synonyms : [],
+  antonyms: Array.isArray(item.antonyms) ? item.antonyms : [],
+  wordFamily: Array.isArray(item.word_family) ? item.word_family : Array.isArray(item.wordFamily) ? item.wordFamily : [],
+  collocations: Array.isArray(item.collocations) ? item.collocations : [],
+  level: item.level,
+  topic: item.topic,
+  difficulty: item.difficulty,
+  isLearned: Boolean(item.is_learned ?? item.isLearned ?? false),
+  isFavorite: Boolean(item.is_favorite ?? item.isFavorite ?? false),
+})
+
+const PLAN_ICONS: Record<string, LearningPlanItem['icon']> = {
+  'learn-new-words': 'book-open',
+  'review-words': 'refresh-cw',
+  'complete-quiz': 'clipboard-check',
+  'practice-difficult': 'target',
+}
+
+const PLAN_ACTIONS: Record<string, string> = {
+  'learn-new-words': 'Start',
+  'review-words': 'Review',
+  'complete-quiz': 'Take Quiz',
+  'practice-difficult': 'Practice',
+}
+
+const mapLearningPlan = (items: any[]): LearningPlanItem[] =>
+  (items || []).map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    icon: PLAN_ICONS[item.id] || 'book-open',
+    completed: Boolean(item.isCompleted),
+    actionLabel: PLAN_ACTIONS[item.id] || 'Go',
+    actionHref: item.actionUrl || '/dashboard',
+  }))
 
 export const progressService = {
   async getProgress() {
     try {
-      const response = await api.get('/api/progress')
+      const response = await api.get('/progress')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch progress:', error)
@@ -14,7 +59,7 @@ export const progressService = {
 
   async getDashboardData(): Promise<DashboardData> {
     try {
-      const response = await api.get<any>('/api/progress/dashboard')
+      const response = await api.get<any>('/progress/dashboard')
       const data = response.data
       const user = data.user || {}
 
@@ -35,10 +80,10 @@ export const progressService = {
           xpEarnedToday: 0,
         },
         stats: [
-          { id: 'words-learned', label: 'Lessons Completed', value: String(data.stats?.lessonsCompleted || 0), icon: 'book', trend: { value: 'Live', direction: 'up' } },
-          { id: 'review-today', label: 'In Progress', value: String(data.stats?.inProgressCourses || 0), icon: 'refresh', trend: { value: 'Pending', direction: 'neutral' } },
+          { id: 'words-learned', label: 'Words Learned', value: String(data.stats?.wordsLearned || 0), icon: 'book', trend: { value: 'Live', direction: 'up' } },
+          { id: 'review-today', label: 'Review Today', value: String(data.stats?.reviewDueToday || 0), icon: 'refresh', trend: { value: data.stats?.reviewDueToday > 0 ? 'Due' : 'All clear', direction: 'neutral' } },
           { id: 'current-streak', label: 'Current Streak', value: `🔥 ${Number(user.streak || 0)} days`, icon: 'flame', trend: { value: 'Live', direction: 'up' } },
-          { id: 'study-time', label: 'Total Courses', value: String(data.stats?.totalCourses || 0), icon: 'clock', trend: { value: 'Live', direction: 'neutral' } },
+          { id: 'study-time', label: 'Lessons Completed', value: String(data.stats?.lessonsCompleted || 0), icon: 'clock', trend: { value: 'Live', direction: 'neutral' } },
         ],
         continueLearning: data.activeCourses?.[0] ? {
           courseId: data.activeCourses[0].id,
@@ -59,8 +104,8 @@ export const progressService = {
           wordsTotal: 0,
           color: '#6366f1',
         },
-        learningPlan: [],
-        wordOfTheDay: {
+        learningPlan: mapLearningPlan(data.learningPlan),
+        wordOfTheDay: data.wordOfTheDay ? mapWord(data.wordOfTheDay) : {
           id: 'demo-word',
           word: 'resilient',
           phonetic: '/rɪˈzɪliənt/',
@@ -112,7 +157,7 @@ export const progressService = {
 
   async getRecentActivity() {
     try {
-      const response = await api.get('/api/users/activity')
+      const response = await api.get('/users/activity')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch activity:', error)

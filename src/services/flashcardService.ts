@@ -26,7 +26,7 @@ export interface Flashcard {
 export const flashcardService = {
   async getAll(): Promise<Flashcard[]> {
     try {
-      const response = await api.get<Flashcard[]>('/api/flashcards')
+      const response = await api.get<Flashcard[]>('/flashcards')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch flashcards:', error)
@@ -36,7 +36,7 @@ export const flashcardService = {
 
   async getTodayReview(): Promise<Flashcard[]> {
     try {
-      const response = await api.get<Flashcard[]>('/api/flashcards/review/today')
+      const response = await api.get<Flashcard[]>('/flashcards/review/today')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch today review cards:', error)
@@ -50,7 +50,7 @@ export const flashcardService = {
         throw new Error('Quality must be between 0 and 5')
       }
 
-      const response = await api.post<any>(`/api/flashcards/${wordId}/review`, {
+      const response = await api.post<any>(`/flashcards/${wordId}/review`, {
         quality,
       })
       return response.data || null
@@ -62,7 +62,7 @@ export const flashcardService = {
 
   async markAsLearned(wordId: string): Promise<boolean> {
     try {
-      const response = await api.post(`/api/flashcards/${wordId}/learn`, {})
+      const response = await api.post(`/flashcards/${wordId}/learn`, {})
       return response.data?.success || false
     } catch (error) {
       console.error('Failed to mark flashcard as learned:', error)

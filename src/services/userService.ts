@@ -4,7 +4,7 @@ import { api } from './api'
 export const userService = {
   async getProfile(): Promise<User | null> {
     try {
-      const response = await api.get<any>('/api/users/profile')
+      const response = await api.get<any>('/users/profile')
       return response.data || null
     } catch (error) {
       console.error('Failed to fetch profile:', error)
@@ -14,7 +14,7 @@ export const userService = {
 
   async updateProfile(updates: Partial<User>): Promise<User | null> {
     try {
-      const response = await api.put('/api/users/profile', updates)
+      const response = await api.put('/users/profile', updates)
       return response.data || null
     } catch (error) {
       console.error('Failed to update profile:', error)
@@ -24,7 +24,7 @@ export const userService = {
 
   async getSettings(): Promise<any> {
     try {
-      const response = await api.get('/api/users/settings')
+      const response = await api.get('/users/settings')
       return response.data
     } catch (error) {
       console.error('Failed to fetch settings:', error)
@@ -34,7 +34,7 @@ export const userService = {
 
   async updateSettings(settings: Record<string, unknown>): Promise<void> {
     try {
-      await api.put('/api/users/settings', settings)
+      await api.put('/users/settings', settings)
     } catch (error) {
       console.error('Failed to update settings:', error)
     }
@@ -46,7 +46,7 @@ export const userService = {
     averageQuizScore: number
   }> {
     try {
-      const response = await api.get('/api/progress')
+      const response = await api.get('/progress')
       return {
         totalWordsLearned: response.data?.length || 0,
         totalQuizzes: 0,
@@ -60,7 +60,7 @@ export const userService = {
 
   async toggleWordFavorite(wordId: string): Promise<boolean> {
     try {
-      const response = await api.post(`/api/vocabulary/${wordId}/toggle-favorite`, {})
+      const response = await api.post(`/vocabulary/${wordId}/toggle-favorite`, {})
       return response.data?.isFavorite || false
     } catch (error) {
       console.error('Failed to toggle favorite:', error)
@@ -70,7 +70,7 @@ export const userService = {
 
   async markWordAsLearned(wordId: string): Promise<boolean> {
     try {
-      const response = await api.post(`/api/flashcards/${wordId}/learn`, {})
+      const response = await api.post(`/flashcards/${wordId}/learn`, {})
       return response.data?.success || false
     } catch (error) {
       console.error('Failed to mark as learned:', error)
@@ -80,7 +80,7 @@ export const userService = {
 
   async getFavorites(): Promise<any[]> {
     try {
-      const response = await api.get('/api/users/favorites')
+      const response = await api.get('/users/favorites')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch favorites:', error)
@@ -90,7 +90,7 @@ export const userService = {
 
   async getActivity(): Promise<any[]> {
     try {
-      const response = await api.get('/api/users/activity')
+      const response = await api.get('/users/activity')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch activity:', error)

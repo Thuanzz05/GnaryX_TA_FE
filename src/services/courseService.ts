@@ -4,7 +4,7 @@ import { api } from './api'
 export const courseService = {
   async getAll(): Promise<Course[]> {
     try {
-      const response = await api.get<Course[]>('/api/courses')
+      const response = await api.get<Course[]>('/courses')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch courses:', error)
@@ -14,7 +14,7 @@ export const courseService = {
 
   async getById(id: string): Promise<Course | null> {
     try {
-      const response = await api.get<any>(`/api/courses/${id}`)
+      const response = await api.get<any>(`/courses/${id}`)
       return response.data || null
     } catch (error) {
       console.error('Failed to fetch course:', error)

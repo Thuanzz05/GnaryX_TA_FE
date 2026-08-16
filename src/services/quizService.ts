@@ -4,7 +4,7 @@ import { api } from './api'
 export const quizService = {
   async getAll(): Promise<Quiz[]> {
     try {
-      const response = await api.get<Quiz[]>('/api/quizzes')
+      const response = await api.get<Quiz[]>('/quizzes')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch quizzes:', error)
@@ -14,7 +14,7 @@ export const quizService = {
 
   async getById(id: string): Promise<(Quiz & { questions: any[] }) | null> {
     try {
-      const response = await api.get<any>(`/api/quizzes/${id}`)
+      const response = await api.get<any>(`/quizzes/${id}`)
       return response.data || null
     } catch (error) {
       console.error('Failed to fetch quiz:', error)
@@ -39,7 +39,7 @@ export const quizService = {
     }>
   }> {
     try {
-      const response = await api.post<any>(`/api/quizzes/${quizId}/submit`, {
+      const response = await api.post<any>(`/quizzes/${quizId}/submit`, {
         answers,
         timeSpent,
       })
@@ -65,7 +65,7 @@ export const quizService = {
 
   async getAttempts(): Promise<any[]> {
     try {
-      const response = await api.get('/api/quizzes/attempts')
+      const response = await api.get('/quizzes/attempts')
       return response.data || []
     } catch (error) {
       console.error('Failed to fetch quiz attempts:', error)
