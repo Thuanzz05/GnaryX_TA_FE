@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Bell, Lock, Moon, Palette, Sun, User, Monitor } from 'lucide-react'
+import { Bell, Lock, Moon, Palette, Sun, User, Monitor, LogOut } from 'lucide-react'
 import { Button, Card, Heading, Input, Select, Text, useToast } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
@@ -27,7 +28,8 @@ function Section({ title, icon: Icon, children }: SectionProps) {
 }
 
 export default function SettingsPage() {
-  const { user } = useAuth()
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
   const { toast } = useToast()
 
@@ -40,6 +42,12 @@ export default function SettingsPage() {
 
   const handleSave = () => {
     toast({ type: 'success', title: 'Settings saved', description: 'Your preferences have been updated.' })
+  }
+
+  const handleLogout = () => {
+    logout()
+    toast({ type: 'success', title: 'Signed out', description: 'You have been successfully signed out.' })
+    navigate('/login', { replace: true })
   }
 
   const THEME_OPTIONS: { value: ThemeMode; label: string; icon: React.ElementType }[] = [
@@ -143,6 +151,22 @@ export default function SettingsPage() {
               )
             })}
           </div>
+        </div>
+      </Section>
+
+      <Section title="Account Security" icon={Lock}>
+        <div className="space-y-3">
+          <p className="text-body-sm text-text-secondary dark:text-slate-400">
+            Sign out from this device and all sessions.
+          </p>
+          <Button 
+            variant="danger" 
+            size="sm" 
+            leftIcon={<LogOut className="h-4 w-4" />}
+            onClick={handleLogout}
+          >
+            Sign Out
+          </Button>
         </div>
       </Section>
 
