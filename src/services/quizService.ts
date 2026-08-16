@@ -1,25 +1,23 @@
 import type { Quiz } from '@/types'
-import { apiFetch } from './api'
-
-function getToken(): string | null {
-  return localStorage.getItem('gnarylex-auth-token') || null
-}
+import { api } from './api'
 
 export const quizService = {
   async getAll(): Promise<Quiz[]> {
     try {
-      const data = await apiFetch<Quiz[]>('/quizzes')
-      return data || []
-    } catch {
+      const response = await api.get<Quiz[]>('/api/quizzes')
+      return response.data || []
+    } catch (error) {
+      console.error('Failed to fetch quizzes:', error)
       return []
     }
   },
 
-  async getById(id: string): Promise<Quiz | null> {
+  async getById(id: string): Promise<(Quiz & { questions: any[] }) | null> {
     try {
-      const data = await apiFetch<Quiz>(`/quizzes/${id}`)
-      return data || null
-    } catch {
+      const response = await api.get<any>(`/api/quizzes/${id}`)
+      return response.data || null
+    } catch (error) {
+      console.error('Failed to fetch quiz:', error)
       return null
     }
   },
@@ -41,38 +39,20 @@ export const quizService = {
     }>
   }> {
     try {
-      const token = getToken()
-      if (!token) {
-        throw new Error('Not authenticated')
-      }
-
-      const data = await apiFetch<{
-        score: number
-        correctCount: number
-        totalQuestions: number
-        xpEarned: number
-        results: Array<{
-          questionId: string
-          selectedAnswer: string
-          correctAnswer: string
-          isCorrect: boolean
-        }>
-      }>(`/quizzes/${quizId}/submit`, {
-        method: 'POST',
-        body: JSON.stringify({ answers, timeSpent }),
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.post<any>(`/api/quizzes/${quizId}/submit`, {
+        answers,
+        timeSpent,
       })
 
-      return (
-        data || {
-          score: 0,
-          correctCount: 0,
-          totalQuestions: answers.length,
-          xpEarned: 0,
-          results: [],
-        }
-      )
-    } catch {
+      return {
+        score: response.data?.score || 0,
+        correctCount: response.data?.correctAnswers || 0,
+        totalQuestions: answers.length,
+        xpEarned: response.data?.xpEarned || 0,
+        results: [],
+      }
+    } catch (error) {
+      console.error('Failed to submit quiz:', error)
       return {
         score: 0,
         correctCount: 0,
@@ -80,6 +60,16 @@ export const quizService = {
         xpEarned: 0,
         results: [],
       }
+    }
+  },
+
+  async getAttempts(): Promise<any[]> {
+    try {
+      const response = await api.get('/api/quizzes/attempts')
+      return response.data || []
+    } catch (error) {
+      console.error('Failed to fetch quiz attempts:', error)
+      return []
     }
   },
 }

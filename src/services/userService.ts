@@ -1,132 +1,110 @@
 import type { User } from '@/types'
-import { apiFetch } from './api'
-
-const MOCK_USER: User = {
-  id: '1',
-  fullName: 'Thuấn',
-  email: 'thuan@example.com',
-  level: 'B1',
-  xp: 4250,
-  levelNumber: 12,
-  streak: 7,
-  dailyGoal: 20,
-  preferredTopics: ['Business', 'Technology'],
-}
-
-function getToken(): string | null {
-  return localStorage.getItem('gnarylex-auth-token') || null
-}
+import { api } from './api'
 
 export const userService = {
-  async getProfile(userId?: string): Promise<User | null> {
+  async getProfile(): Promise<User | null> {
     try {
-      if (!userId) {
-        return MOCK_USER
-      }
-      
-      const token = getToken()
-      const data = await apiFetch<User>(`/users/${userId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      return data || MOCK_USER
-    } catch {
-      return MOCK_USER
+      const response = await api.get<any>('/api/users/profile')
+      return response.data || null
+    } catch (error) {
+      console.error('Failed to fetch profile:', error)
+      return null
     }
   },
 
-  async updateProfile(userId: string, updates: Partial<User>): Promise<User> {
+  async updateProfile(updates: Partial<User>): Promise<User | null> {
     try {
-      const token = getToken()
-      if (!token) throw new Error('Not authenticated')
-
-      const data = await apiFetch<User>(`/users/${userId}`, {
-        method: 'PUT',
-        body: JSON.stringify(updates),
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      return data || MOCK_USER
-    } catch {
-      return MOCK_USER
+      const response = await api.put('/api/users/profile', updates)
+      return response.data || null
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+      return null
     }
   },
 
-  async updateSettings(_settings: Record<string, unknown>): Promise<void> {
-    return
+  async getSettings(): Promise<any> {
+    try {
+      const response = await api.get('/api/users/settings')
+      return response.data
+    } catch (error) {
+      console.error('Failed to fetch settings:', error)
+      return null
+    }
   },
 
-  async getProgress(userId: string): Promise<{
+  async updateSettings(settings: Record<string, unknown>): Promise<void> {
+    try {
+      await api.put('/api/users/settings', settings)
+    } catch (error) {
+      console.error('Failed to update settings:', error)
+    }
+  },
+
+  async getProgress(): Promise<{
     totalWordsLearned: number
     totalQuizzes: number
     averageQuizScore: number
   }> {
     try {
-      const token = getToken()
-      const data = await apiFetch<{
-        totalWordsLearned: number
-        totalQuizzes: number
-        averageQuizScore: number
-      }>(`/users/${userId}/progress`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      })
-      return data || { totalWordsLearned: 0, totalQuizzes: 0, averageQuizScore: 0 }
-    } catch {
+      const response = await api.get('/api/progress')
+      return {
+        totalWordsLearned: response.data?.length || 0,
+        totalQuizzes: 0,
+        averageQuizScore: 0,
+      }
+    } catch (error) {
+      console.error('Failed to fetch progress:', error)
       return { totalWordsLearned: 0, totalQuizzes: 0, averageQuizScore: 0 }
     }
   },
 
-  async toggleWordFavorite(wordId: string, isFavorite: boolean): Promise<boolean> {
+  async toggleWordFavorite(wordId: string): Promise<boolean> {
     try {
-      const token = getToken()
-      if (!token) return false
-      
-      await apiFetch<{ success: boolean; isFavorite: boolean }>(
-        `/vocabulary/${wordId}/favorite`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ isFavorite }),
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      )
-      return isFavorite
-    } catch {
+      const response = await api.post(`/api/vocabulary/${wordId}/toggle-favorite`, {})
+      return response.data?.isFavorite || false
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error)
       return false
     }
   },
 
-  async markWordAsLearned(wordId: string, isLearned: boolean): Promise<boolean> {
+  async markWordAsLearned(wordId: string): Promise<boolean> {
     try {
-      const token = getToken()
-      if (!token) return false
-      
-      await apiFetch<{ success: boolean; isLearned: boolean }>(
-        `/vocabulary/${wordId}/learned`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ isLearned }),
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      )
-      return isLearned
-    } catch {
+      const response = await api.post(`/api/flashcards/${wordId}/learn`, {})
+      return response.data?.success || false
+    } catch (error) {
+      console.error('Failed to mark as learned:', error)
       return false
+    }
+  },
+
+  async getFavorites(): Promise<any[]> {
+    try {
+      const response = await api.get('/api/users/favorites')
+      return response.data || []
+    } catch (error) {
+      console.error('Failed to fetch favorites:', error)
+      return []
+    }
+  },
+
+  async getActivity(): Promise<any[]> {
+    try {
+      const response = await api.get('/api/users/activity')
+      return response.data || []
+    } catch (error) {
+      console.error('Failed to fetch activity:', error)
+      return []
     }
   },
 
   async logLearningActivity(type: string, description: string, xpEarned?: number): Promise<boolean> {
     try {
-      const token = getToken()
-      if (!token) return false
-      
-      await apiFetch<{ id: string; success: boolean }>(
-        '/learning-activities',
-        {
-          method: 'POST',
-          body: JSON.stringify({ type, description, xpEarned }),
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      )
+      // This endpoint may need to be added to backend if needed
+      console.log('Logging activity:', { type, description, xpEarned })
       return true
-    } catch {
+    } catch (error) {
+      console.error('Failed to log activity:', error)
       return false
     }
   },

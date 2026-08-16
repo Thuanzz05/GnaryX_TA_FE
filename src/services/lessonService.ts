@@ -1,17 +1,37 @@
 import type { Lesson } from '@/types'
-import { apiFetch } from './api'
+import { api } from './api'
 
 export const lessonService = {
   async getByCourseId(courseId: string): Promise<Lesson[]> {
     try {
-      return await apiFetch<Lesson[]>(`/lessons/${courseId}`)
-    } catch {
+      const response = await api.get<any>(`/api/courses/${courseId}`)
+      return response.data?.lessons || []
+    } catch (error) {
+      console.error('Failed to fetch lessons:', error)
       return []
     }
   },
 
-  async getById(courseId: string, lessonId: string): Promise<Lesson | null> {
-    const lessons = await this.getByCourseId(courseId)
-    return lessons.find((lesson) => lesson.id === lessonId) ?? null
+  async getById(lessonId: string): Promise<Lesson | null> {
+    try {
+      const response = await api.get<any>(`/api/lessons/${lessonId}`)
+      return response.data || null
+    } catch (error) {
+      console.error('Failed to fetch lesson:', error)
+      return null
+    }
+  },
+
+  async updateProgress(lessonId: string, progress: number, status: string) {
+    try {
+      const response = await api.post(`/api/lessons/${lessonId}/progress`, {
+        progress,
+        status,
+      })
+      return response.data
+    } catch (error) {
+      console.error('Failed to update lesson progress:', error)
+      return null
+    }
   },
 }
