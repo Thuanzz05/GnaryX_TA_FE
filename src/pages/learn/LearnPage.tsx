@@ -55,11 +55,11 @@ export default function LearnPage() {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
-      filtered = filtered.filter(
-        (course) =>
-          course.title.toLowerCase().includes(query) ||
-          course.description.toLowerCase().includes(query),
-      )
+      filtered = filtered.filter((course) => {
+        const title = String(course?.title ?? '').toLowerCase()
+        const description = String(course?.description ?? '').toLowerCase()
+        return title.includes(query) || description.includes(query)
+      })
     }
 
     setFilteredCourses(filtered)

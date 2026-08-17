@@ -22,8 +22,9 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
+    const status = error.response?.status
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if ((status === 401 || status === 403) && !originalRequest._retry) {
       originalRequest._retry = true
 
       try {
@@ -35,15 +36,22 @@ api.interceptors.response.use(
         const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { token: refreshToken })
         const nextAccessToken = response.data.accessToken
 
+        if (!nextAccessToken) {
+          throw new Error('Invalid refresh response')
+        }
+
         localStorage.setItem('accessToken', nextAccessToken)
+        localStorage.setItem('gnarylex-auth-token', nextAccessToken)
         originalRequest.headers = originalRequest.headers ?? {}
         originalRequest.headers.Authorization = `Bearer ${nextAccessToken}`
 
         return api(originalRequest)
       } catch (refreshError) {
         localStorage.removeItem('accessToken')
+        localStorage.removeItem('gnarylex-auth-token')
         localStorage.removeItem('refreshToken')
         localStorage.removeItem('user')
+        localStorage.removeItem('gnarylex-auth-user')
         window.location.href = '/login'
         return Promise.reject(refreshError)
       }

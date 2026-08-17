@@ -8,28 +8,34 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course }: CourseCardProps) {
-  const isStarted = course.progress > 0
+  const title = String(course?.title ?? 'Untitled course')
+  const description = String(course?.description ?? 'No description available.')
+  const level = String(course?.level ?? 'A1')
+  const lessonCount = Number(course?.lessonCount ?? 0)
+  const wordCount = Number(course?.wordCount ?? 0)
+  const progressValue = Number(course?.progress ?? 0)
+  const isStarted = progressValue > 0
 
   return (
     <Card className="flex h-full flex-col transition-shadow hover:shadow-lg" padding="md">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div
           className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl"
-          style={{ backgroundColor: `${course.color}15` }}
+          style={{ backgroundColor: `${course?.color ?? '#4F46E5'}15` }}
         >
-          {course.icon}
+          {course?.icon ?? '📘'}
         </div>
         <Badge variant="outline" className="shrink-0">
-          {course.level}
+          {level}
         </Badge>
       </div>
 
       <div className="mb-4 flex-1">
         <h3 className="text-heading-4 mb-2 text-text-primary dark:text-slate-100">
-          {course.title}
+          {title}
         </h3>
         <p className="text-body-sm text-text-secondary dark:text-slate-400">
-          {course.description}
+          {description}
         </p>
       </div>
 
@@ -37,11 +43,11 @@ export function CourseCard({ course }: CourseCardProps) {
         <div className="flex items-center gap-3 text-body-sm text-text-secondary dark:text-slate-400">
           <div className="flex items-center gap-1.5">
             <GraduationCap className="h-4 w-4" aria-hidden="true" />
-            <span>{course.lessonCount} lessons</span>
+            <span>{lessonCount} lessons</span>
           </div>
           <div className="flex items-center gap-1.5">
             <BookOpen className="h-4 w-4" aria-hidden="true" />
-            <span>{course.wordCount} words</span>
+            <span>{wordCount} words</span>
           </div>
         </div>
 
@@ -49,14 +55,14 @@ export function CourseCard({ course }: CourseCardProps) {
           <>
             <div className="flex items-center justify-between text-caption font-medium">
               <span className="text-text-secondary dark:text-slate-400">Progress</span>
-              <span className="text-text-primary dark:text-slate-100">{course.progress}%</span>
+              <span className="text-text-primary dark:text-slate-100">{progressValue}%</span>
             </div>
-            <ProgressBar value={course.progress} size="sm" />
+            <ProgressBar value={progressValue} size="sm" />
           </>
         )}
       </div>
 
-      <Link to={`/learn/${course.id}`} className="mt-auto">
+      <Link to={`/learn/${course?.id ?? ''}`} className="mt-auto">
         <Button
           fullWidth
           variant={isStarted ? 'primary' : 'outline'}
