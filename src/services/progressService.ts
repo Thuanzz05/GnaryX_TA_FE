@@ -182,4 +182,24 @@ export const progressService = {
       return null
     }
   },
+
+  async getAnalytics(): Promise<{
+    wordsLearnedByDay: { day: string; date: string; words: number }[]
+    cefrProgress: { level: string; learned: number; total: number; progress: number }[]
+    quizPerformance: { title: string; score: number; correct_answers: number; wrong_answers: number; submitted_at: string }[]
+    totals: { totalWords: number; currentStreak: number; quizzesTaken: number; avgQuizScore: number }
+  }> {
+    try {
+      const response = await api.get<any>('/progress/analytics')
+      return response.data
+    } catch (error) {
+      console.error('Failed to fetch progress analytics:', error)
+      return {
+        wordsLearnedByDay: [],
+        cefrProgress: [],
+        quizPerformance: [],
+        totals: { totalWords: 0, currentStreak: 0, quizzesTaken: 0, avgQuizScore: 0 },
+      }
+    }
+  },
 }

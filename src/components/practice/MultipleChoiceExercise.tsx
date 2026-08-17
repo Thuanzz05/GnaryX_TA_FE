@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, XCircle } from 'lucide-react'
-import { Button, Card, ProgressBar } from '@/components/common'
-import { MOCK_VOCABULARY } from '@/data'
+import { Button, Card, ProgressBar, Skeleton } from '@/components/common'
+import { usePracticeWords } from '@/hooks'
+import type { VocabularyWord } from '@/types'
 import { cn } from '@/utils/cn'
 
 interface Question {
@@ -11,10 +12,10 @@ interface Question {
   options: string[]
 }
 
-function buildQuestions(): Question[] {
-  const words = [...MOCK_VOCABULARY].sort(() => Math.random() - 0.5).slice(0, 8)
-  return words.map((w) => {
-    const distractors = MOCK_VOCABULARY
+function buildQuestions(words: VocabularyWord[]): Question[] {
+  const pool = [...words].sort(() => Math.random() - 0.5).slice(0, 8)
+  return pool.map((w) => {
+    const distractors = words
       .filter((v) => v.id !== w.id)
       .sort(() => Math.random() - 0.5)
       .slice(0, 3)
@@ -25,11 +26,35 @@ function buildQuestions(): Question[] {
 }
 
 export function MultipleChoiceExercise() {
-  const [questions] = useState<Question[]>(buildQuestions)
+  const { words, isLoading, error } = usePracticeWords()
+  const [questions, setQuestions] = useState<Question[]>([])
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
   const [score, setScore] = useState(0)
   const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (words.length >= 4) setQuestions(buildQuestions(words))
+  }, [words])
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+      </div>
+    )
+  }
+
+  if (error || questions.length === 0) {
+    return (
+      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
+        {error || 'Not enough vocabulary words to build this exercise yet.'}
+      </Card>
+    )
+  }
 
   const current = questions[index]
   const progress = (index / questions.length) * 100

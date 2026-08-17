@@ -1,0 +1,1149 @@
+diff --git a/src/components/layout/GlobalSearch.tsx b/src/components/layout/GlobalSearch.tsx
+index a1a123a..6f7f312 100644
+--- a/src/components/layout/GlobalSearch.tsx
++++ b/src/components/layout/GlobalSearch.tsx
+@@ -2,22 +2,16 @@ import { useState, useEffect, useRef } from 'react';
+ import { Search, X, History } from 'lucide-react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import { useNavigate } from 'react-router-dom';
+-
+-const MOCK_VOCABULARY = [
+-  { id: 'abandon', word: 'abandon', phonetic: '/əˈbændən/', level: 'B2', meaning: 'to leave completely', vi: 'từ bỏ' },
+-  { id: 'ability', word: 'ability', phonetic: '/əˈbɪləti/', level: 'A2', meaning: 'power or skill to do something', vi: 'khả năng' },
+-  { id: 'achieve', word: 'achieve', phonetic: '/əˈtʃiːv/', level: 'B1', meaning: 'to successfully reach a goal', vi: 'đạt được' },
+-  { id: 'collaborate', word: 'collaborate', phonetic: '/kəˈlæbəreɪt/', level: 'C1', meaning: 'work jointly on an activity', vi: 'hợp tác' },
+-  { id: 'flexible', word: 'flexible', phonetic: '/ˈfleksəbl/', level: 'B2', meaning: 'able to change or be changed easily', vi: 'linh hoạt' },
+-  { id: 'resilient', word: 'resilient', phonetic: '/rɪˈzɪliənt/', level: 'C1', meaning: 'able to withstand or recover quickly', vi: 'kiên cường' },
+-  { id: 'strategy', word: 'strategy', phonetic: '/ˈstrætədʒi/', level: 'B2', meaning: 'a plan of action', vi: 'chiến lược' },
+-];
++import { vocabularyService } from '@/services/vocabularyService';
++import type { VocabularyWord } from '@/types';
+ 
+ const POPULAR_SEARCHES = ['resilient', 'achieve', 'strategy', 'collaborate', 'flexible'];
+ 
+ export function GlobalSearch() {
+   const [isOpen, setIsOpen] = useState(false);
+   const [query, setQuery] = useState('');
++  const [results, setResults] = useState<VocabularyWord[]>([]);
++  const [isSearching, setIsSearching] = useState(false);
+   const searchRef = useRef<HTMLDivElement>(null);
+   const navigate = useNavigate();
+ 
+@@ -31,9 +25,23 @@ export function GlobalSearch() {
+     return () => document.removeEventListener('mousedown', handleClickOutside);
+   }, []);
+ 
+-  const filteredResults = query
+-    ? MOCK_VOCABULARY.filter((item) => item.word.toLowerCase().includes(query.toLowerCase()))
+-    : [];
++  useEffect(() => {
++    const trimmed = query.trim();
++    if (!trimmed) {
++      setResults([]);
++      setIsSearching(false);
++      return;
++    }
++
++    setIsSearching(true);
++    const timer = window.setTimeout(async () => {
++      const words = await vocabularyService.search(trimmed);
++      setResults(words.slice(0, 8));
++      setIsSearching(false);
++    }, 250);
++
++    return () => window.clearTimeout(timer);
++  }, [query]);
+ 
+   const handleSelectWord = (wordId: string) => {
+     setIsOpen(false);
+@@ -90,7 +98,7 @@ export function GlobalSearch() {
+                       <button
+                         key={term}
+                         type="button"
+-                        onClick={() => handleSelectWord(term)}
++                        onClick={() => setQuery(term)}
+                         className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 transition-all hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                       >
+                         {term}
+@@ -103,12 +111,14 @@ export function GlobalSearch() {
+                   <h4 className="mb-2 px-2 pt-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                     Dictionary Suggestions
+                   </h4>
+-                  {filteredResults.length === 0 ? (
++                  {isSearching ? (
++                    <div className="p-4 text-center text-sm text-gray-500">Searching…</div>
++                  ) : results.length === 0 ? (
+                     <div className="p-4 text-center text-sm text-gray-500">
+                       No vocabulary found for "<span className="font-semibold text-gray-900 dark:text-white">{query}</span>"
+                     </div>
+                   ) : (
+-                    filteredResults.map((item) => (
++                    results.map((item) => (
+                       <button
+                         key={item.id}
+                         type="button"
+@@ -122,7 +132,7 @@ export function GlobalSearch() {
+                             <span className="hidden text-xs font-mono text-gray-500 sm:inline-block">{item.phonetic}</span>
+                           </div>
+                           <div className="mt-0.5 ml-6 line-clamp-1 text-sm text-gray-500">
+-                            {item.meaning} <span className="italic text-gray-400">({item.vi})</span>
++                            {item.meaning} <span className="italic text-gray-400">({item.meaningVi})</span>
+                           </div>
+                         </div>
+                         <span className="shrink-0 rounded-lg bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+diff --git a/src/components/layout/MobileSearchSheet.tsx b/src/components/layout/MobileSearchSheet.tsx
+index ac3d5c7..67eac2c 100644
+--- a/src/components/layout/MobileSearchSheet.tsx
++++ b/src/components/layout/MobileSearchSheet.tsx
+@@ -1,9 +1,9 @@
+-import { useEffect, useMemo, useRef, useState } from 'react'
++import { useEffect, useRef, useState } from 'react'
+ import { useNavigate } from 'react-router-dom'
+ import { AnimatePresence, motion } from 'framer-motion'
+ import { ArrowLeft, Search, Volume2, X } from 'lucide-react'
+ import { Badge } from '@/components/common'
+-import { MOCK_VOCABULARY } from '@/data'
++import { vocabularyService } from '@/services/vocabularyService'
+ import { speakWord } from '@/utils/speech'
+ import type { VocabularyWord } from '@/types'
+ 
+@@ -18,15 +18,25 @@ export function MobileSearchSheet({ open, onClose }: MobileSearchSheetProps) {
+   const navigate = useNavigate()
+   const inputRef = useRef<HTMLInputElement>(null)
+   const [query, setQuery] = useState('')
++  const [results, setResults] = useState<VocabularyWord[]>([])
++  const [isSearching, setIsSearching] = useState(false)
+ 
+-  const results = useMemo(() => {
+-    if (!query.trim()) return []
++  useEffect(() => {
++    const trimmed = query.trim()
++    if (!trimmed) {
++      setResults([])
++      setIsSearching(false)
++      return
++    }
++
++    setIsSearching(true)
++    const timer = window.setTimeout(async () => {
++      const words = await vocabularyService.search(trimmed)
++      setResults(words.slice(0, 8))
++      setIsSearching(false)
++    }, 250)
+ 
+-    const q = query.toLowerCase()
+-    return MOCK_VOCABULARY.filter(
+-      (word) =>
+-        word.word.toLowerCase().includes(q) || word.meaning.toLowerCase().includes(q),
+-    ).slice(0, 8)
++    return () => window.clearTimeout(timer)
+   }, [query])
+ 
+   useEffect(() => {
+@@ -120,6 +130,10 @@ export function MobileSearchSheet({ open, onClose }: MobileSearchSheetProps) {
+                   ))}
+                 </div>
+               </div>
++            ) : isSearching ? (
++              <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
++                <p className="text-sm text-text-secondary dark:text-slate-400">Searching…</p>
++              </div>
+             ) : results.length === 0 ? (
+               <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-muted text-text-secondary dark:bg-surface-card-dark dark:text-slate-400">
+diff --git a/src/components/practice/FillInBlankExercise.tsx b/src/components/practice/FillInBlankExercise.tsx
+index dc433c4..8039d37 100644
+--- a/src/components/practice/FillInBlankExercise.tsx
++++ b/src/components/practice/FillInBlankExercise.tsx
+@@ -1,8 +1,9 @@
+-import { useRef, useState } from 'react'
++import { useEffect, useRef, useState } from 'react'
+ import { motion, AnimatePresence } from 'framer-motion'
+ import { CheckCircle2, XCircle } from 'lucide-react'
+-import { Button, Card, ProgressBar } from '@/components/common'
+-import { MOCK_VOCABULARY } from '@/data'
++import { Button, Card, ProgressBar, Skeleton } from '@/components/common'
++import { usePracticeWords } from '@/hooks'
++import type { VocabularyWord } from '@/types'
+ import { cn } from '@/utils/cn'
+ 
+ interface Question {
+@@ -11,8 +12,8 @@ interface Question {
+   hint: string
+ }
+ 
+-function buildQuestions(): Question[] {
+-  return MOCK_VOCABULARY
++function buildQuestions(words: VocabularyWord[]): Question[] {
++  return words
+     .filter((w) => w.example)
+     .sort(() => Math.random() - 0.5)
+     .slice(0, 6)
+@@ -24,7 +25,8 @@ function buildQuestions(): Question[] {
+ }
+ 
+ export function FillInBlankExercise() {
+-  const [questions] = useState<Question[]>(buildQuestions)
++  const { words, isLoading, error } = usePracticeWords()
++  const [questions, setQuestions] = useState<Question[]>([])
+   const [index, setIndex] = useState(0)
+   const [input, setInput] = useState('')
+   const [submitted, setSubmitted] = useState(false)
+@@ -32,6 +34,28 @@ export function FillInBlankExercise() {
+   const [done, setDone] = useState(false)
+   const inputRef = useRef<HTMLInputElement>(null)
+ 
++  useEffect(() => {
++    if (words.length > 0) setQuestions(buildQuestions(words))
++  }, [words])
++
++  if (isLoading) {
++    return (
++      <div className="space-y-4">
++        <Skeleton className="h-4 w-40" />
++        <Skeleton className="h-24 w-full" />
++        <Skeleton className="h-12 w-full" />
++      </div>
++    )
++  }
++
++  if (error || questions.length === 0) {
++    return (
++      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
++        {error || 'Not enough vocabulary words with example sentences to build this exercise yet.'}
++      </Card>
++    )
++  }
++
+   const current = questions[index]
+   const isCorrect = input.trim().toLowerCase() === current.answer
+ 
+diff --git a/src/components/practice/ListeningExercise.tsx b/src/components/practice/ListeningExercise.tsx
+index c7d6c0a..ca55411 100644
+--- a/src/components/practice/ListeningExercise.tsx
++++ b/src/components/practice/ListeningExercise.tsx
+@@ -1,17 +1,18 @@
+-import { useState } from 'react'
++import { useEffect, useState } from 'react'
+ import { motion, AnimatePresence } from 'framer-motion'
+ import { CheckCircle2, Volume2, XCircle } from 'lucide-react'
+-import { Button, Card, ProgressBar } from '@/components/common'
+-import { MOCK_VOCABULARY } from '@/data'
++import { Button, Card, ProgressBar, Skeleton } from '@/components/common'
++import { usePracticeWords } from '@/hooks'
++import type { VocabularyWord } from '@/types'
+ import { speakWord } from '@/utils/speech'
+ import { cn } from '@/utils/cn'
+ 
+ interface Question { word: string; options: string[] }
+ 
+-function buildQuestions(): Question[] {
+-  const words = [...MOCK_VOCABULARY].sort(() => Math.random() - 0.5).slice(0, 6)
+-  return words.map((w) => {
+-    const distractors = MOCK_VOCABULARY
++function buildQuestions(words: VocabularyWord[]): Question[] {
++  const pool = [...words].sort(() => Math.random() - 0.5).slice(0, 6)
++  return pool.map((w) => {
++    const distractors = words
+       .filter((v) => v.id !== w.id)
+       .sort(() => Math.random() - 0.5)
+       .slice(0, 3)
+@@ -21,13 +22,36 @@ function buildQuestions(): Question[] {
+ }
+ 
+ export function ListeningExercise() {
+-  const [questions] = useState<Question[]>(buildQuestions)
++  const { words, isLoading, error } = usePracticeWords()
++  const [questions, setQuestions] = useState<Question[]>([])
+   const [index, setIndex] = useState(0)
+   const [selected, setSelected] = useState<string | null>(null)
+   const [score, setScore] = useState(0)
+   const [done, setDone] = useState(false)
+   const [played, setPlayed] = useState(false)
+ 
++  useEffect(() => {
++    if (words.length >= 4) setQuestions(buildQuestions(words))
++  }, [words])
++
++  if (isLoading) {
++    return (
++      <div className="space-y-4">
++        <Skeleton className="h-4 w-40" />
++        <Skeleton className="h-28 w-full" />
++        <Skeleton className="h-16 w-full" />
++      </div>
++    )
++  }
++
++  if (error || questions.length === 0) {
++    return (
++      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
++        {error || 'Not enough vocabulary words to build this exercise yet.'}
++      </Card>
++    )
++  }
++
+   const current = questions[index]
+ 
+   const handleListen = () => {
+diff --git a/src/components/practice/MatchingExercise.tsx b/src/components/practice/MatchingExercise.tsx
+index 9479446..af3a5ce 100644
+--- a/src/components/practice/MatchingExercise.tsx
++++ b/src/components/practice/MatchingExercise.tsx
+@@ -1,28 +1,54 @@
+-import { useState } from 'react'
++import { useEffect, useState } from 'react'
+ import { motion } from 'framer-motion'
+ import { CheckCircle2 } from 'lucide-react'
+-import { Button } from '@/components/common'
+-import { MOCK_VOCABULARY } from '@/data'
++import { Button, Card, Skeleton } from '@/components/common'
++import { usePracticeWords } from '@/hooks'
++import type { VocabularyWord } from '@/types'
+ import { cn } from '@/utils/cn'
+ 
+ interface Pair { id: string; word: string; meaning: string }
+ 
+-function buildPairs(): Pair[] {
+-  return MOCK_VOCABULARY
++function buildPairs(words: VocabularyWord[]): Pair[] {
++  return [...words]
+     .sort(() => Math.random() - 0.5)
+     .slice(0, 5)
+     .map((w) => ({ id: w.id, word: w.word, meaning: w.meaning }))
+ }
+ 
+ export function MatchingExercise() {
+-  const [pairs] = useState<Pair[]>(buildPairs)
++  const { words, isLoading, error } = usePracticeWords()
++  const [pairs, setPairs] = useState<Pair[]>([])
++  const [shuffledMeanings, setShuffledMeanings] = useState<Pair[]>([])
+   const [selectedWord, setSelectedWord] = useState<string | null>(null)
+   const [selectedMeaning, setSelectedMeaning] = useState<string | null>(null)
+   const [matched, setMatched] = useState<string[]>([])
+   const [wrong, setWrong] = useState<string[]>([])
+   const [done, setDone] = useState(false)
+ 
+-  const shuffledMeanings = useState(() => [...pairs].sort(() => Math.random() - 0.5))[0]
++  useEffect(() => {
++    if (words.length >= 5) {
++      const next = buildPairs(words)
++      setPairs(next)
++      setShuffledMeanings([...next].sort(() => Math.random() - 0.5))
++    }
++  }, [words])
++
++  if (isLoading) {
++    return (
++      <div className="grid grid-cols-2 gap-3">
++        {Array.from({ length: 5 }).map((_, i) => <Skeleton key={`w-${i}`} className="h-12 w-full" />)}
++        {Array.from({ length: 5 }).map((_, i) => <Skeleton key={`m-${i}`} className="h-12 w-full" />)}
++      </div>
++    )
++  }
++
++  if (error || pairs.length === 0) {
++    return (
++      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
++        {error || 'Not enough vocabulary words to build this exercise yet.'}
++      </Card>
++    )
++  }
+ 
+   const handleWordClick = (id: string) => {
+     if (matched.includes(id)) return
+diff --git a/src/components/practice/MultipleChoiceExercise.tsx b/src/components/practice/MultipleChoiceExercise.tsx
+index aa324ce..cbfcb3b 100644
+--- a/src/components/practice/MultipleChoiceExercise.tsx
++++ b/src/components/practice/MultipleChoiceExercise.tsx
+@@ -1,8 +1,9 @@
+-import { useState } from 'react'
++import { useEffect, useState } from 'react'
+ import { motion, AnimatePresence } from 'framer-motion'
+ import { CheckCircle2, XCircle } from 'lucide-react'
+-import { Button, Card, ProgressBar } from '@/components/common'
+-import { MOCK_VOCABULARY } from '@/data'
++import { Button, Card, ProgressBar, Skeleton } from '@/components/common'
++import { usePracticeWords } from '@/hooks'
++import type { VocabularyWord } from '@/types'
+ import { cn } from '@/utils/cn'
+ 
+ interface Question {
+@@ -11,10 +12,10 @@ interface Question {
+   options: string[]
+ }
+ 
+-function buildQuestions(): Question[] {
+-  const words = [...MOCK_VOCABULARY].sort(() => Math.random() - 0.5).slice(0, 8)
+-  return words.map((w) => {
+-    const distractors = MOCK_VOCABULARY
++function buildQuestions(words: VocabularyWord[]): Question[] {
++  const pool = [...words].sort(() => Math.random() - 0.5).slice(0, 8)
++  return pool.map((w) => {
++    const distractors = words
+       .filter((v) => v.id !== w.id)
+       .sort(() => Math.random() - 0.5)
+       .slice(0, 3)
+@@ -25,12 +26,36 @@ function buildQuestions(): Question[] {
+ }
+ 
+ export function MultipleChoiceExercise() {
+-  const [questions] = useState<Question[]>(buildQuestions)
++  const { words, isLoading, error } = usePracticeWords()
++  const [questions, setQuestions] = useState<Question[]>([])
+   const [index, setIndex] = useState(0)
+   const [selected, setSelected] = useState<string | null>(null)
+   const [score, setScore] = useState(0)
+   const [done, setDone] = useState(false)
+ 
++  useEffect(() => {
++    if (words.length >= 4) setQuestions(buildQuestions(words))
++  }, [words])
++
++  if (isLoading) {
++    return (
++      <div className="space-y-4">
++        <Skeleton className="h-4 w-40" />
++        <Skeleton className="h-28 w-full" />
++        <Skeleton className="h-16 w-full" />
++        <Skeleton className="h-16 w-full" />
++      </div>
++    )
++  }
++
++  if (error || questions.length === 0) {
++    return (
++      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
++        {error || 'Not enough vocabulary words to build this exercise yet.'}
++      </Card>
++    )
++  }
++
+   const current = questions[index]
+   const progress = (index / questions.length) * 100
+ 
+diff --git a/src/components/practice/SpellingExercise.tsx b/src/components/practice/SpellingExercise.tsx
+index fe1aa1c..23d7e01 100644
+--- a/src/components/practice/SpellingExercise.tsx
++++ b/src/components/practice/SpellingExercise.tsx
+@@ -1,22 +1,24 @@
+ import { useEffect, useRef, useState } from 'react'
+ import { motion, AnimatePresence } from 'framer-motion'
+ import { CheckCircle2, Volume2, XCircle } from 'lucide-react'
+-import { Button, Card, ProgressBar } from '@/components/common'
+-import { MOCK_VOCABULARY } from '@/data'
++import { Button, Card, ProgressBar, Skeleton } from '@/components/common'
++import { usePracticeWords } from '@/hooks'
++import type { VocabularyWord } from '@/types'
+ import { speakWord } from '@/utils/speech'
+ import { cn } from '@/utils/cn'
+ 
+ interface Question { word: string; meaning: string; hint: string }
+ 
+-function buildQuestions(): Question[] {
+-  return [...MOCK_VOCABULARY]
++function buildQuestions(words: VocabularyWord[]): Question[] {
++  return [...words]
+     .sort(() => Math.random() - 0.5)
+     .slice(0, 7)
+     .map((w) => ({ word: w.word.toLowerCase(), meaning: w.meaning, hint: w.phonetic }))
+ }
+ 
+ export function SpellingExercise() {
+-  const [questions] = useState<Question[]>(buildQuestions)
++  const { words, isLoading, error } = usePracticeWords()
++  const [questions, setQuestions] = useState<Question[]>([])
+   const [index, setIndex] = useState(0)
+   const [input, setInput] = useState('')
+   const [submitted, setSubmitted] = useState(false)
+@@ -24,13 +26,35 @@ export function SpellingExercise() {
+   const [done, setDone] = useState(false)
+   const inputRef = useRef<HTMLInputElement>(null)
+ 
+-  const current = questions[index]
+-  const isCorrect = input.trim().toLowerCase() === current.word
++  useEffect(() => {
++    if (words.length > 0) setQuestions(buildQuestions(words))
++  }, [words])
+ 
+   useEffect(() => {
+     if (!submitted) setTimeout(() => inputRef.current?.focus(), 50)
+   }, [index, submitted])
+ 
++  if (isLoading) {
++    return (
++      <div className="space-y-4">
++        <Skeleton className="h-4 w-40" />
++        <Skeleton className="h-24 w-full" />
++        <Skeleton className="h-12 w-full" />
++      </div>
++    )
++  }
++
++  if (error || questions.length === 0) {
++    return (
++      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
++        {error || 'Not enough vocabulary words to build this exercise yet.'}
++      </Card>
++    )
++  }
++
++  const current = questions[index]
++  const isCorrect = input.trim().toLowerCase() === current.word
++
+   const handleCheck = () => {
+     if (!input.trim()) return
+     setSubmitted(true)
+diff --git a/src/components/practice/WordMeaningExercise.tsx b/src/components/practice/WordMeaningExercise.tsx
+index df29c07..de36c27 100644
+--- a/src/components/practice/WordMeaningExercise.tsx
++++ b/src/components/practice/WordMeaningExercise.tsx
+@@ -1,8 +1,9 @@
+-import { useState } from 'react'
++import { useEffect, useState } from 'react'
+ import { motion, AnimatePresence } from 'framer-motion'
+ import { CheckCircle2, Volume2, XCircle } from 'lucide-react'
+-import { Badge, Button, Card, ProgressBar } from '@/components/common'
+-import { MOCK_VOCABULARY } from '@/data'
++import { Badge, Button, Card, ProgressBar, Skeleton } from '@/components/common'
++import { usePracticeWords } from '@/hooks'
++import type { VocabularyWord } from '@/types'
+ import { speakWord } from '@/utils/speech'
+ import { cn } from '@/utils/cn'
+ 
+@@ -16,10 +17,10 @@ interface Question {
+   example: string
+ }
+ 
+-function buildQuestions(): Question[] {
+-  const words = [...MOCK_VOCABULARY].sort(() => Math.random() - 0.5).slice(0, 8)
+-  return words.map((w) => {
+-    const distractors = MOCK_VOCABULARY
++function buildQuestions(words: VocabularyWord[]): Question[] {
++  const pool = [...words].sort(() => Math.random() - 0.5).slice(0, 8)
++  return pool.map((w) => {
++    const distractors = words
+       .filter((v) => v.id !== w.id)
+       .sort(() => Math.random() - 0.5)
+       .slice(0, 3)
+@@ -37,12 +38,36 @@ function buildQuestions(): Question[] {
+ }
+ 
+ export function WordMeaningExercise() {
+-  const [questions] = useState<Question[]>(buildQuestions)
++  const { words, isLoading, error } = usePracticeWords()
++  const [questions, setQuestions] = useState<Question[]>([])
+   const [index, setIndex] = useState(0)
+   const [selected, setSelected] = useState<string | null>(null)
+   const [score, setScore] = useState(0)
+   const [done, setDone] = useState(false)
+ 
++  useEffect(() => {
++    if (words.length >= 4) setQuestions(buildQuestions(words))
++  }, [words])
++
++  if (isLoading) {
++    return (
++      <div className="space-y-4">
++        <Skeleton className="h-4 w-40" />
++        <Skeleton className="h-28 w-full" />
++        <Skeleton className="h-16 w-full" />
++        <Skeleton className="h-16 w-full" />
++      </div>
++    )
++  }
++
++  if (error || questions.length === 0) {
++    return (
++      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
++        {error || 'Not enough vocabulary words to build this exercise yet.'}
++      </Card>
++    )
++  }
++
+   const current = questions[index]
+   const progress = (index / questions.length) * 100
+ 
+diff --git a/src/components/progress/CEFRProgress.tsx b/src/components/progress/CEFRProgress.tsx
+index b5429b7..6b7617e 100644
+--- a/src/components/progress/CEFRProgress.tsx
++++ b/src/components/progress/CEFRProgress.tsx
+@@ -1,50 +1,57 @@
+ import { motion } from 'framer-motion'
+ import { Lock } from 'lucide-react'
+ 
+-const levels = [
+-  { level: 'A1', name: 'Beginner', progress: 100, words: '500/500' },
+-  { level: 'A2', name: 'Elementary', progress: 82, words: '410/500' },
+-  { level: 'B1', name: 'Intermediate', progress: 54, words: '432/800' },
+-  { level: 'B2', name: 'Upper Int.', progress: 20, words: '160/800' },
+-  { level: 'C1', name: 'Advanced', progress: 5, words: '40/800' },
+-  { level: 'C2', name: 'Mastery', progress: 0, words: '0/800', locked: true },
+-]
++const LEVEL_NAMES: Record<string, string> = {
++  A1: 'Beginner',
++  A2: 'Elementary',
++  B1: 'Intermediate',
++  B2: 'Upper Int.',
++  C1: 'Advanced',
++  C2: 'Mastery',
++}
++
++interface CEFRProgressProps {
++  data: { level: string; learned: number; total: number; progress: number }[]
++}
+ 
+-export function CEFRProgress() {
++export function CEFRProgress({ data }: CEFRProgressProps) {
+   return (
+     <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+       <h3 className="mb-6 text-lg font-bold text-gray-900 dark:text-white">CEFR Level Progress</h3>
+ 
+       <div className="space-y-6">
+-        {levels.map((item, index) => (
+-          <div key={item.level} className={`relative ${item.locked ? 'opacity-50' : ''}`}>
+-            <div className="mb-2 flex items-end justify-between">
+-              <div>
+-                <span className="mr-2 font-bold text-gray-900 dark:text-white">{item.level}</span>
+-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{item.name}</span>
++        {data.map((item, index) => {
++          const locked = item.total === 0
++          return (
++            <div key={item.level} className={`relative ${locked ? 'opacity-50' : ''}`}>
++              <div className="mb-2 flex items-end justify-between">
++                <div>
++                  <span className="mr-2 font-bold text-gray-900 dark:text-white">{item.level}</span>
++                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{LEVEL_NAMES[item.level] || item.level}</span>
++                </div>
++                <div className="flex items-center gap-3">
++                  <span className="text-xs font-medium text-gray-400">{item.learned}/{item.total} words</span>
++                  {locked ? (
++                    <Lock size={14} className="text-gray-400" />
++                  ) : (
++                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{item.progress}%</span>
++                  )}
++                </div>
+               </div>
+-              <div className="flex items-center gap-3">
+-                <span className="text-xs font-medium text-gray-400">{item.words} words</span>
+-                {item.locked ? (
+-                  <Lock size={14} className="text-gray-400" />
+-                ) : (
+-                  <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{item.progress}%</span>
+-                )}
+-              </div>
+-            </div>
+ 
+-            <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+-              <motion.div
+-                initial={{ width: 0 }}
+-                animate={{ width: `${item.progress}%` }}
+-                transition={{ duration: 1, delay: index * 0.1 }}
+-                className={`h-full rounded-full ${
+-                  item.progress === 100 ? 'bg-green-500' : 'bg-indigo-600 dark:bg-indigo-500'
+-                }`}
+-              />
++              <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
++                <motion.div
++                  initial={{ width: 0 }}
++                  animate={{ width: `${item.progress}%` }}
++                  transition={{ duration: 1, delay: index * 0.1 }}
++                  className={`h-full rounded-full ${
++                    item.progress === 100 ? 'bg-green-500' : 'bg-indigo-600 dark:bg-indigo-500'
++                  }`}
++                />
++              </div>
+             </div>
+-          </div>
+-        ))}
++          )
++        })}
+       </div>
+     </div>
+   )
+diff --git a/src/components/progress/WordsLearnedChart.tsx b/src/components/progress/WordsLearnedChart.tsx
+index 340f100..1c61fc9 100644
+--- a/src/components/progress/WordsLearnedChart.tsx
++++ b/src/components/progress/WordsLearnedChart.tsx
+@@ -1,16 +1,10 @@
+ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+ 
+-const data = [
+-  { day: 'Mon', words: 12 },
+-  { day: 'Tue', words: 25 },
+-  { day: 'Wed', words: 45 },
+-  { day: 'Thu', words: 30 },
+-  { day: 'Fri', words: 60 },
+-  { day: 'Sat', words: 85 },
+-  { day: 'Sun', words: 105 },
+-]
++interface WordsLearnedChartProps {
++  data: { day: string; words: number }[]
++}
+ 
+-export function WordsLearnedChart() {
++export function WordsLearnedChart({ data }: WordsLearnedChartProps) {
+   return (
+     <div className="h-96 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+       <h3 className="mb-6 text-lg font-bold text-gray-900 dark:text-white">Words Learned This Week</h3>
+diff --git a/src/hooks/index.ts b/src/hooks/index.ts
+index a19b333..a11f9ee 100644
+--- a/src/hooks/index.ts
++++ b/src/hooks/index.ts
+@@ -1,3 +1,4 @@
+ export { useTheme } from './useTheme'
+ export { AuthProvider, useAuth } from './useAuth'
+ export { useDashboard } from './useDashboard'
++export { usePracticeWords } from './usePracticeWords'
+diff --git a/src/hooks/usePracticeWords.ts b/src/hooks/usePracticeWords.ts
+new file mode 100644
+index 0000000..95972b1
+--- /dev/null
++++ b/src/hooks/usePracticeWords.ts
+@@ -0,0 +1,44 @@
++import { useCallback, useEffect, useState } from 'react'
++import type { VocabularyWord } from '@/types'
++import { vocabularyService } from '@/services/vocabularyService'
++
++interface UsePracticeWordsResult {
++  words: VocabularyWord[]
++  isLoading: boolean
++  error: string | null
++  refetch: () => void
++}
++
++/**
++ * Loads the real vocabulary bank from the API for use by practice exercises
++ * (multiple choice, fill-in-the-blank, matching, listening, spelling, word
++ * meaning). Each exercise is responsible for sampling/shuffling from the
++ * returned list itself.
++ */
++export function usePracticeWords(): UsePracticeWordsResult {
++  const [words, setWords] = useState<VocabularyWord[]>([])
++  const [isLoading, setIsLoading] = useState(true)
++  const [error, setError] = useState<string | null>(null)
++
++  const fetchWords = useCallback(async () => {
++    setIsLoading(true)
++    setError(null)
++    try {
++      const data = await vocabularyService.getAll()
++      setWords(data)
++      if (data.length === 0) {
++        setError('No vocabulary words are available yet.')
++      }
++    } catch {
++      setError('Something went wrong while loading vocabulary.')
++    } finally {
++      setIsLoading(false)
++    }
++  }, [])
++
++  useEffect(() => {
++    fetchWords()
++  }, [fetchWords])
++
++  return { words, isLoading, error, refetch: fetchWords }
++}
+diff --git a/src/pages/profile/ProfilePage.tsx b/src/pages/profile/ProfilePage.tsx
+index 752c9d5..e75c72d 100644
+--- a/src/pages/profile/ProfilePage.tsx
++++ b/src/pages/profile/ProfilePage.tsx
+@@ -1,19 +1,45 @@
++import { useEffect, useState } from 'react'
+ import { motion } from 'framer-motion'
+ import { Link } from 'react-router-dom'
+-import { BookOpen, Clock, Flame, Settings, Trophy, Zap } from 'lucide-react'
+-import { Badge, Button, Card, Heading, Text, UserAvatar } from '@/components/common'
++import { BookOpen, Flame, Settings, Target, Trophy, Zap } from 'lucide-react'
++import { Badge, Button, Card, Heading, Skeleton, Text, UserAvatar } from '@/components/common'
+ import { useAuth } from '@/hooks/useAuth'
+-import { MOCK_PROGRESS, MOCK_ACHIEVEMENTS } from '@/data'
+-
+-const stats = [
+-  { label: 'Words Learned', value: '1,248', icon: BookOpen },
+-  { label: 'Study Time', value: '32h', icon: Clock },
+-  { label: 'Quizzes Done', value: '18', icon: Trophy },
+-  { label: 'Day Streak', value: '7', icon: Flame },
+-]
++import { achievementService } from '@/services/achievementService'
++import { progressService } from '@/services/progressService'
++import type { Achievement } from '@/types'
+ 
+ export default function ProfilePage() {
+   const { user } = useAuth()
++  const [achievements, setAchievements] = useState<Achievement[]>([])
++  const [totals, setTotals] = useState<{ totalWords: number; currentStreak: number; quizzesTaken: number; avgQuizScore: number } | null>(null)
++  const [xp, setXp] = useState<number>(0)
++  const [isLoading, setIsLoading] = useState(true)
++
++  useEffect(() => {
++    let cancelled = false
++    async function load() {
++      setIsLoading(true)
++      const [achievementList, analytics, dashboard] = await Promise.all([
++        achievementService.getAll(),
++        progressService.getAnalytics(),
++        progressService.getDashboardData(),
++      ])
++      if (cancelled) return
++      setAchievements(achievementList)
++      setTotals(analytics.totals)
++      setXp(dashboard.progress.xp)
++      setIsLoading(false)
++    }
++    load()
++    return () => { cancelled = true }
++  }, [])
++
++  const stats = [
++    { label: 'Words Learned', value: String(totals?.totalWords ?? 0), icon: BookOpen },
++    { label: 'Avg Quiz Score', value: `${totals?.avgQuizScore ?? 0}%`, icon: Target },
++    { label: 'Quizzes Done', value: String(totals?.quizzesTaken ?? 0), icon: Trophy },
++    { label: 'Day Streak', value: String(totals?.currentStreak ?? user?.streak ?? 0), icon: Flame },
++  ]
+ 
+   return (
+     <motion.div
+@@ -35,11 +61,11 @@ export default function ProfilePage() {
+               <Badge variant="primary">{user?.level ?? 'B1'} Intermediate</Badge>
+               <Badge variant="outline">
+                 <Zap className="h-3 w-3 mr-1" />
+-                {MOCK_PROGRESS.xp.toLocaleString()} XP
++                {xp.toLocaleString()} XP
+               </Badge>
+               <Badge variant="warning">
+                 <Flame className="h-3 w-3 mr-1" />
+-                {user?.streak ?? 7} day streak
++                {totals?.currentStreak ?? user?.streak ?? 0} day streak
+               </Badge>
+             </div>
+           </div>
+@@ -53,26 +79,37 @@ export default function ProfilePage() {
+ 
+       {/* Stats */}
+       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+-        {stats.map((stat) => {
+-          const Icon = stat.icon
+-          return (
+-            <Card key={stat.label} padding="md" className="text-center">
+-              <Icon className="mx-auto mb-2 h-6 w-6 text-primary-500" aria-hidden="true" />
+-              <p className="text-heading-3 text-text-primary dark:text-slate-100">{stat.value}</p>
+-              <p className="text-caption text-text-muted dark:text-slate-500">{stat.label}</p>
+-            </Card>
+-          )
+-        })}
++        {isLoading ? (
++          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
++        ) : (
++          stats.map((stat) => {
++            const Icon = stat.icon
++            return (
++              <Card key={stat.label} padding="md" className="text-center">
++                <Icon className="mx-auto mb-2 h-6 w-6 text-primary-500" aria-hidden="true" />
++                <p className="text-heading-3 text-text-primary dark:text-slate-100">{stat.value}</p>
++                <p className="text-caption text-text-muted dark:text-slate-500">{stat.label}</p>
++              </Card>
++            )
++          })
++        )}
+       </div>
+ 
+       {/* Achievements */}
+       <Card padding="lg">
+         <div className="mb-4 flex items-center justify-between">
+           <Heading level="h3">Achievements</Heading>
+-          <Badge variant="primary">{MOCK_ACHIEVEMENTS.filter((a) => a.unlocked).length} / {MOCK_ACHIEVEMENTS.length}</Badge>
++          <Badge variant="primary">{achievements.filter((a) => a.unlocked).length} / {achievements.length}</Badge>
+         </div>
++        {isLoading ? (
++          <div className="grid gap-3 sm:grid-cols-2">
++            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
++          </div>
++        ) : achievements.length === 0 ? (
++          <p className="text-body-sm text-text-secondary dark:text-slate-400">No achievements available yet.</p>
++        ) : (
+         <div className="grid gap-3 sm:grid-cols-2">
+-          {MOCK_ACHIEVEMENTS.slice(0, 10).map((a, i) => (
++          {achievements.slice(0, 10).map((a, i) => (
+             <motion.div
+               key={a.id}
+               initial={{ opacity: 0, scale: 0.95 }}
+@@ -96,6 +133,7 @@ export default function ProfilePage() {
+             </motion.div>
+           ))}
+         </div>
++        )}
+       </Card>
+ 
+       {/* Learning goal */}
+diff --git a/src/pages/progress/ProgressPage.tsx b/src/pages/progress/ProgressPage.tsx
+index 5e2c3f9..be44a89 100644
+--- a/src/pages/progress/ProgressPage.tsx
++++ b/src/pages/progress/ProgressPage.tsx
+@@ -1,40 +1,62 @@
++import { useEffect, useState } from 'react'
+ import { motion } from 'framer-motion'
+ import { CEFRProgress, WordsLearnedChart } from '@/components/progress'
+-import { StatCard } from '@/components/common'
++import { Skeleton, StatCard } from '@/components/common'
++import { progressService } from '@/services/progressService'
+ import type { DashboardStat } from '@/types'
+ 
+-const stats: DashboardStat[] = [
+-  {
+-    id: 'total-words',
+-    label: 'Total Words',
+-    value: '1,248',
+-    icon: 'book',
+-    trend: { value: '+5% this week', direction: 'up' },
+-  },
+-  {
+-    id: 'goal-accuracy',
+-    label: 'Goal Accuracy',
+-    value: '92%',
+-    icon: 'refresh',
+-    trend: { value: '+5% this week', direction: 'up' },
+-  },
+-  {
+-    id: 'longest-streak',
+-    label: 'Longest Streak',
+-    value: '14 days',
+-    icon: 'flame',
+-    trend: { value: 'Steady', direction: 'neutral' },
+-  },
+-  {
+-    id: 'study-time',
+-    label: 'Total Study Time',
+-    value: '32h 15m',
+-    icon: 'clock',
+-    trend: { value: '+2h', direction: 'up' },
+-  },
+-]
++type Analytics = Awaited<ReturnType<typeof progressService.getAnalytics>>
+ 
+ export default function ProgressPage() {
++  const [analytics, setAnalytics] = useState<Analytics | null>(null)
++  const [isLoading, setIsLoading] = useState(true)
++
++  useEffect(() => {
++    let cancelled = false
++    async function load() {
++      setIsLoading(true)
++      const data = await progressService.getAnalytics()
++      if (!cancelled) {
++        setAnalytics(data)
++        setIsLoading(false)
++      }
++    }
++    load()
++    return () => { cancelled = true }
++  }, [])
++
++  const totals = analytics?.totals
++  const stats: DashboardStat[] = [
++    {
++      id: 'total-words',
++      label: 'Words Learned',
++      value: String(totals?.totalWords ?? 0),
++      icon: 'book',
++      trend: { value: 'Live', direction: 'up' },
++    },
++    {
++      id: 'avg-quiz-score',
++      label: 'Avg Quiz Score',
++      value: `${totals?.avgQuizScore ?? 0}%`,
++      icon: 'refresh',
++      trend: { value: 'Live', direction: 'neutral' },
++    },
++    {
++      id: 'current-streak',
++      label: 'Current Streak',
++      value: `${totals?.currentStreak ?? 0} days`,
++      icon: 'flame',
++      trend: { value: 'Live', direction: 'up' },
++    },
++    {
++      id: 'quizzes-taken',
++      label: 'Quizzes Taken',
++      value: String(totals?.quizzesTaken ?? 0),
++      icon: 'clock',
++      trend: { value: 'Live', direction: 'neutral' },
++    },
++  ]
++
+   return (
+     <motion.div
+       initial={{ opacity: 0, y: 20 }}
+@@ -47,14 +69,25 @@ export default function ProgressPage() {
+       </div>
+ 
+       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+-        {stats.map((stat) => (
+-          <StatCard key={stat.id} stat={stat} />
+-        ))}
++        {isLoading ? (
++          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
++        ) : (
++          stats.map((stat) => <StatCard key={stat.id} stat={stat} />)
++        )}
+       </div>
+ 
+       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+-        <WordsLearnedChart />
+-        <CEFRProgress />
++        {isLoading ? (
++          <>
++            <Skeleton className="h-96 w-full" />
++            <Skeleton className="h-96 w-full" />
++          </>
++        ) : (
++          <>
++            <WordsLearnedChart data={analytics?.wordsLearnedByDay ?? []} />
++            <CEFRProgress data={analytics?.cefrProgress ?? []} />
++          </>
++        )}
+       </div>
+     </motion.div>
+   )
+diff --git a/src/pages/settings/SettingsPage.tsx b/src/pages/settings/SettingsPage.tsx
+index 4781d59..dbae5d0 100644
+--- a/src/pages/settings/SettingsPage.tsx
++++ b/src/pages/settings/SettingsPage.tsx
+@@ -1,10 +1,11 @@
+-import { useState } from 'react'
++import { useEffect, useState } from 'react'
+ import { useNavigate } from 'react-router-dom'
+ import { motion } from 'framer-motion'
+ import { Bell, Lock, Moon, Palette, Sun, User, Monitor, LogOut } from 'lucide-react'
+ import { Button, Card, Heading, Input, Select, Text, useToast } from '@/components/common'
+ import { useAuth } from '@/hooks/useAuth'
+ import { useTheme } from '@/hooks/useTheme'
++import { userService } from '@/services/userService'
+ import type { ThemeMode } from '@/types'
+ 
+ const DAILY_GOAL_OPTIONS = [5, 10, 15, 20, 30, 50].map((n) => ({ value: String(n), label: `${n} words per day` }))
+@@ -39,9 +40,42 @@ export default function SettingsPage() {
+   const [level, setLevel] = useState<"A1" | "A2" | "B1" | "B2" | "C1" | "C2">(user?.level ?? 'B1')
+   const [topic, setTopic] = useState(user?.preferredTopics?.[0] ?? 'Business')
+   const [notifications, setNotifications] = useState({ daily: true, review: true, achievement: true })
++  const [isSaving, setIsSaving] = useState(false)
+ 
+-  const handleSave = () => {
+-    toast({ type: 'success', title: 'Settings saved', description: 'Your preferences have been updated.' })
++  useEffect(() => {
++    let cancelled = false
++    async function loadSettings() {
++      const settings = await userService.getSettings()
++      if (cancelled || !settings) return
++      if (settings.dailyGoal) setDailyGoal(String(settings.dailyGoal))
++      if (settings.level) setLevel(settings.level)
++      if (settings.preferredTopics?.[0]) setTopic(settings.preferredTopics[0])
++      if (settings.theme && settings.theme !== theme) setTheme(settings.theme as ThemeMode)
++      setNotifications((prev) => ({ ...prev, daily: Boolean(settings.notifications) }))
++    }
++    loadSettings()
++    return () => { cancelled = true }
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [])
++
++  const handleSave = async () => {
++    setIsSaving(true)
++    try {
++      await Promise.all([
++        userService.updateProfile({ fullName: name, dailyGoal: Number(dailyGoal) }),
++        userService.updateSettings({
++          dailyGoal: Number(dailyGoal),
++          preferredTopics: [topic],
++          theme,
++          notifications: notifications.daily,
++        }),
++      ])
++      toast({ type: 'success', title: 'Settings saved', description: 'Your preferences have been updated.' })
++    } catch {
++      toast({ type: 'error', title: 'Save failed', description: 'Something went wrong while saving your settings.' })
++    } finally {
++      setIsSaving(false)
++    }
+   }
+ 
+   const handleLogout = () => {
+@@ -171,7 +205,9 @@ export default function SettingsPage() {
+       </Section>
+ 
+       <div className="flex justify-end">
+-        <Button size="lg" onClick={handleSave}>Save Changes</Button>
++        <Button size="lg" onClick={handleSave} disabled={isSaving}>
++          {isSaving ? 'Saving...' : 'Save Changes'}
++        </Button>
+       </div>
+     </motion.div>
+   )
+diff --git a/src/services/achievementService.ts b/src/services/achievementService.ts
+new file mode 100644
+index 0000000..089cace
+--- /dev/null
++++ b/src/services/achievementService.ts
+@@ -0,0 +1,24 @@
++import type { Achievement } from '@/types'
++import { api } from './api'
++
++const mapAchievement = (item: any): Achievement => ({
++  id: item.id,
++  title: item.title,
++  description: item.description,
++  icon: item.icon,
++  unlocked: Boolean(item.isUnlocked),
++  unlockedAt: item.unlockedAt || undefined,
++  xpReward: Number(item.xp_reward ?? item.xpReward ?? 0),
++})
++
++export const achievementService = {
++  async getAll(): Promise<Achievement[]> {
++    try {
++      const response = await api.get<any[]>('/achievements')
++      return (response.data || []).map(mapAchievement)
++    } catch (error) {
++      console.error('Failed to fetch achievements:', error)
++      return []
++    }
++  },
++}
+diff --git a/src/services/index.ts b/src/services/index.ts
+index 7ca6b60..7648fdf 100644
+--- a/src/services/index.ts
++++ b/src/services/index.ts
+@@ -5,3 +5,4 @@ export { lessonService } from './lessonService'
+ export { quizService } from './quizService'
+ export { progressService } from './progressService'
+ export { userService } from './userService'
++export { achievementService } from './achievementService'
+diff --git a/src/services/progressService.ts b/src/services/progressService.ts
+index cfd179a..6dd1149 100644
+--- a/src/services/progressService.ts
++++ b/src/services/progressService.ts
+@@ -182,4 +182,24 @@ export const progressService = {
+       return null
+     }
+   },
++
++  async getAnalytics(): Promise<{
++    wordsLearnedByDay: { day: string; date: string; words: number }[]
++    cefrProgress: { level: string; learned: number; total: number; progress: number }[]
++    quizPerformance: { title: string; score: number; correct_answers: number; wrong_answers: number; submitted_at: string }[]
++    totals: { totalWords: number; currentStreak: number; quizzesTaken: number; avgQuizScore: number }
++  }> {
++    try {
++      const response = await api.get<any>('/progress/analytics')
++      return response.data
++    } catch (error) {
++      console.error('Failed to fetch progress analytics:', error)
++      return {
++        wordsLearnedByDay: [],
++        cefrProgress: [],
++        quizPerformance: [],
++        totals: { totalWords: 0, currentStreak: 0, quizzesTaken: 0, avgQuizScore: 0 },
++      }
++    }
++  },
+ }

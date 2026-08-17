@@ -1,16 +1,10 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-const data = [
-  { day: 'Mon', words: 12 },
-  { day: 'Tue', words: 25 },
-  { day: 'Wed', words: 45 },
-  { day: 'Thu', words: 30 },
-  { day: 'Fri', words: 60 },
-  { day: 'Sat', words: 85 },
-  { day: 'Sun', words: 105 },
-]
+interface WordsLearnedChartProps {
+  data: { day: string; words: number }[]
+}
 
-export function WordsLearnedChart() {
+export function WordsLearnedChart({ data }: WordsLearnedChartProps) {
   return (
     <div className="h-96 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <h3 className="mb-6 text-lg font-bold text-gray-900 dark:text-white">Words Learned This Week</h3>

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Bell, Lock, Moon, Palette, Sun, User, Monitor, LogOut } from 'lucide-react'
 import { Button, Card, Heading, Input, Select, Text, useToast } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
+import { userService } from '@/services/userService'
 import type { ThemeMode } from '@/types'
 
 const DAILY_GOAL_OPTIONS = [5, 10, 15, 20, 30, 50].map((n) => ({ value: String(n), label: `${n} words per day` }))
@@ -39,9 +40,42 @@ export default function SettingsPage() {
   const [level, setLevel] = useState<"A1" | "A2" | "B1" | "B2" | "C1" | "C2">(user?.level ?? 'B1')
   const [topic, setTopic] = useState(user?.preferredTopics?.[0] ?? 'Business')
   const [notifications, setNotifications] = useState({ daily: true, review: true, achievement: true })
+  const [isSaving, setIsSaving] = useState(false)
 
-  const handleSave = () => {
-    toast({ type: 'success', title: 'Settings saved', description: 'Your preferences have been updated.' })
+  useEffect(() => {
+    let cancelled = false
+    async function loadSettings() {
+      const settings = await userService.getSettings()
+      if (cancelled || !settings) return
+      if (settings.dailyGoal) setDailyGoal(String(settings.dailyGoal))
+      if (settings.level) setLevel(settings.level)
+      if (settings.preferredTopics?.[0]) setTopic(settings.preferredTopics[0])
+      if (settings.theme && settings.theme !== theme) setTheme(settings.theme as ThemeMode)
+      setNotifications((prev) => ({ ...prev, daily: Boolean(settings.notifications) }))
+    }
+    loadSettings()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleSave = async () => {
+    setIsSaving(true)
+    try {
+      await Promise.all([
+        userService.updateProfile({ fullName: name, dailyGoal: Number(dailyGoal) }),
+        userService.updateSettings({
+          dailyGoal: Number(dailyGoal),
+          preferredTopics: [topic],
+          theme,
+          notifications: notifications.daily,
+        }),
+      ])
+      toast({ type: 'success', title: 'Settings saved', description: 'Your preferences have been updated.' })
+    } catch {
+      toast({ type: 'error', title: 'Save failed', description: 'Something went wrong while saving your settings.' })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleLogout = () => {
@@ -171,7 +205,9 @@ export default function SettingsPage() {
       </Section>
 
       <div className="flex justify-end">
-        <Button size="lg" onClick={handleSave}>Save Changes</Button>
+        <Button size="lg" onClick={handleSave} disabled={isSaving}>
+          {isSaving ? 'Saving...' : 'Save Changes'}
+        </Button>
       </div>
     </motion.div>
   )

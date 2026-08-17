@@ -1,22 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, Volume2, XCircle } from 'lucide-react'
-import { Button, Card, ProgressBar } from '@/components/common'
-import { MOCK_VOCABULARY } from '@/data'
+import { Button, Card, ProgressBar, Skeleton } from '@/components/common'
+import { usePracticeWords } from '@/hooks'
+import type { VocabularyWord } from '@/types'
 import { speakWord } from '@/utils/speech'
 import { cn } from '@/utils/cn'
 
 interface Question { word: string; meaning: string; hint: string }
 
-function buildQuestions(): Question[] {
-  return [...MOCK_VOCABULARY]
+function buildQuestions(words: VocabularyWord[]): Question[] {
+  return [...words]
     .sort(() => Math.random() - 0.5)
     .slice(0, 7)
     .map((w) => ({ word: w.word.toLowerCase(), meaning: w.meaning, hint: w.phonetic }))
 }
 
 export function SpellingExercise() {
-  const [questions] = useState<Question[]>(buildQuestions)
+  const { words, isLoading, error } = usePracticeWords()
+  const [questions, setQuestions] = useState<Question[]>([])
   const [index, setIndex] = useState(0)
   const [input, setInput] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -24,12 +26,34 @@ export function SpellingExercise() {
   const [done, setDone] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const current = questions[index]
-  const isCorrect = input.trim().toLowerCase() === current.word
+  useEffect(() => {
+    if (words.length > 0) setQuestions(buildQuestions(words))
+  }, [words])
 
   useEffect(() => {
     if (!submitted) setTimeout(() => inputRef.current?.focus(), 50)
   }, [index, submitted])
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    )
+  }
+
+  if (error || questions.length === 0) {
+    return (
+      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
+        {error || 'Not enough vocabulary words to build this exercise yet.'}
+      </Card>
+    )
+  }
+
+  const current = questions[index]
+  const isCorrect = input.trim().toLowerCase() === current.word
 
   const handleCheck = () => {
     if (!input.trim()) return

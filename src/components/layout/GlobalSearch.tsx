@@ -2,22 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, X, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-
-const MOCK_VOCABULARY = [
-  { id: 'abandon', word: 'abandon', phonetic: '/əˈbændən/', level: 'B2', meaning: 'to leave completely', vi: 'từ bỏ' },
-  { id: 'ability', word: 'ability', phonetic: '/əˈbɪləti/', level: 'A2', meaning: 'power or skill to do something', vi: 'khả năng' },
-  { id: 'achieve', word: 'achieve', phonetic: '/əˈtʃiːv/', level: 'B1', meaning: 'to successfully reach a goal', vi: 'đạt được' },
-  { id: 'collaborate', word: 'collaborate', phonetic: '/kəˈlæbəreɪt/', level: 'C1', meaning: 'work jointly on an activity', vi: 'hợp tác' },
-  { id: 'flexible', word: 'flexible', phonetic: '/ˈfleksəbl/', level: 'B2', meaning: 'able to change or be changed easily', vi: 'linh hoạt' },
-  { id: 'resilient', word: 'resilient', phonetic: '/rɪˈzɪliənt/', level: 'C1', meaning: 'able to withstand or recover quickly', vi: 'kiên cường' },
-  { id: 'strategy', word: 'strategy', phonetic: '/ˈstrætədʒi/', level: 'B2', meaning: 'a plan of action', vi: 'chiến lược' },
-];
+import { vocabularyService } from '@/services/vocabularyService';
+import type { VocabularyWord } from '@/types';
 
 const POPULAR_SEARCHES = ['resilient', 'achieve', 'strategy', 'collaborate', 'flexible'];
 
 export function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState<VocabularyWord[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -31,9 +25,23 @@ export function GlobalSearch() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredResults = query
-    ? MOCK_VOCABULARY.filter((item) => item.word.toLowerCase().includes(query.toLowerCase()))
-    : [];
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timer = window.setTimeout(async () => {
+      const words = await vocabularyService.search(trimmed);
+      setResults(words.slice(0, 8));
+      setIsSearching(false);
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [query]);
 
   const handleSelectWord = (wordId: string) => {
     setIsOpen(false);
@@ -90,7 +98,7 @@ export function GlobalSearch() {
                       <button
                         key={term}
                         type="button"
-                        onClick={() => handleSelectWord(term)}
+                        onClick={() => setQuery(term)}
                         className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-700 transition-all hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                       >
                         {term}
@@ -103,12 +111,14 @@ export function GlobalSearch() {
                   <h4 className="mb-2 px-2 pt-2 text-xs font-bold uppercase tracking-wider text-gray-400">
                     Dictionary Suggestions
                   </h4>
-                  {filteredResults.length === 0 ? (
+                  {isSearching ? (
+                    <div className="p-4 text-center text-sm text-gray-500">Searching…</div>
+                  ) : results.length === 0 ? (
                     <div className="p-4 text-center text-sm text-gray-500">
                       No vocabulary found for "<span className="font-semibold text-gray-900 dark:text-white">{query}</span>"
                     </div>
                   ) : (
-                    filteredResults.map((item) => (
+                    results.map((item) => (
                       <button
                         key={item.id}
                         type="button"
@@ -122,7 +132,7 @@ export function GlobalSearch() {
                             <span className="hidden text-xs font-mono text-gray-500 sm:inline-block">{item.phonetic}</span>
                           </div>
                           <div className="mt-0.5 ml-6 line-clamp-1 text-sm text-gray-500">
-                            {item.meaning} <span className="italic text-gray-400">({item.vi})</span>
+                            {item.meaning} <span className="italic text-gray-400">({item.meaningVi})</span>
                           </div>
                         </div>
                         <span className="shrink-0 rounded-lg bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">

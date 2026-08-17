@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, Search, Volume2, X } from 'lucide-react'
 import { Badge } from '@/components/common'
-import { MOCK_VOCABULARY } from '@/data'
+import { vocabularyService } from '@/services/vocabularyService'
 import { speakWord } from '@/utils/speech'
 import type { VocabularyWord } from '@/types'
 
@@ -18,15 +18,25 @@ export function MobileSearchSheet({ open, onClose }: MobileSearchSheetProps) {
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
+  const [results, setResults] = useState<VocabularyWord[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
-  const results = useMemo(() => {
-    if (!query.trim()) return []
+  useEffect(() => {
+    const trimmed = query.trim()
+    if (!trimmed) {
+      setResults([])
+      setIsSearching(false)
+      return
+    }
 
-    const q = query.toLowerCase()
-    return MOCK_VOCABULARY.filter(
-      (word) =>
-        word.word.toLowerCase().includes(q) || word.meaning.toLowerCase().includes(q),
-    ).slice(0, 8)
+    setIsSearching(true)
+    const timer = window.setTimeout(async () => {
+      const words = await vocabularyService.search(trimmed)
+      setResults(words.slice(0, 8))
+      setIsSearching(false)
+    }, 250)
+
+    return () => window.clearTimeout(timer)
   }, [query])
 
   useEffect(() => {
@@ -119,6 +129,10 @@ export function MobileSearchSheet({ open, onClose }: MobileSearchSheetProps) {
                     </button>
                   ))}
                 </div>
+              </div>
+            ) : isSearching ? (
+              <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+                <p className="text-sm text-text-secondary dark:text-slate-400">Searching…</p>
               </div>
             ) : results.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">

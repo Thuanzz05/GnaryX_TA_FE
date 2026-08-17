@@ -1,28 +1,54 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { CheckCircle2 } from 'lucide-react'
-import { Button } from '@/components/common'
-import { MOCK_VOCABULARY } from '@/data'
+import { Button, Card, Skeleton } from '@/components/common'
+import { usePracticeWords } from '@/hooks'
+import type { VocabularyWord } from '@/types'
 import { cn } from '@/utils/cn'
 
 interface Pair { id: string; word: string; meaning: string }
 
-function buildPairs(): Pair[] {
-  return MOCK_VOCABULARY
+function buildPairs(words: VocabularyWord[]): Pair[] {
+  return [...words]
     .sort(() => Math.random() - 0.5)
     .slice(0, 5)
     .map((w) => ({ id: w.id, word: w.word, meaning: w.meaning }))
 }
 
 export function MatchingExercise() {
-  const [pairs] = useState<Pair[]>(buildPairs)
+  const { words, isLoading, error } = usePracticeWords()
+  const [pairs, setPairs] = useState<Pair[]>([])
+  const [shuffledMeanings, setShuffledMeanings] = useState<Pair[]>([])
   const [selectedWord, setSelectedWord] = useState<string | null>(null)
   const [selectedMeaning, setSelectedMeaning] = useState<string | null>(null)
   const [matched, setMatched] = useState<string[]>([])
   const [wrong, setWrong] = useState<string[]>([])
   const [done, setDone] = useState(false)
 
-  const shuffledMeanings = useState(() => [...pairs].sort(() => Math.random() - 0.5))[0]
+  useEffect(() => {
+    if (words.length >= 5) {
+      const next = buildPairs(words)
+      setPairs(next)
+      setShuffledMeanings([...next].sort(() => Math.random() - 0.5))
+    }
+  }, [words])
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        {Array.from({ length: 5 }).map((_, i) => <Skeleton key={`w-${i}`} className="h-12 w-full" />)}
+        {Array.from({ length: 5 }).map((_, i) => <Skeleton key={`m-${i}`} className="h-12 w-full" />)}
+      </div>
+    )
+  }
+
+  if (error || pairs.length === 0) {
+    return (
+      <Card padding="lg" className="text-center text-body-sm text-text-secondary dark:text-slate-400">
+        {error || 'Not enough vocabulary words to build this exercise yet.'}
+      </Card>
+    )
+  }
 
   const handleWordClick = (id: string) => {
     if (matched.includes(id)) return

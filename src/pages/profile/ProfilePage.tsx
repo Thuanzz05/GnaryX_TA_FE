@@ -1,19 +1,45 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { BookOpen, Clock, Flame, Settings, Trophy, Zap } from 'lucide-react'
-import { Badge, Button, Card, Heading, Text, UserAvatar } from '@/components/common'
+import { BookOpen, Flame, Settings, Target, Trophy, Zap } from 'lucide-react'
+import { Badge, Button, Card, Heading, Skeleton, Text, UserAvatar } from '@/components/common'
 import { useAuth } from '@/hooks/useAuth'
-import { MOCK_PROGRESS, MOCK_ACHIEVEMENTS } from '@/data'
-
-const stats = [
-  { label: 'Words Learned', value: '1,248', icon: BookOpen },
-  { label: 'Study Time', value: '32h', icon: Clock },
-  { label: 'Quizzes Done', value: '18', icon: Trophy },
-  { label: 'Day Streak', value: '7', icon: Flame },
-]
+import { achievementService } from '@/services/achievementService'
+import { progressService } from '@/services/progressService'
+import type { Achievement } from '@/types'
 
 export default function ProfilePage() {
   const { user } = useAuth()
+  const [achievements, setAchievements] = useState<Achievement[]>([])
+  const [totals, setTotals] = useState<{ totalWords: number; currentStreak: number; quizzesTaken: number; avgQuizScore: number } | null>(null)
+  const [xp, setXp] = useState<number>(0)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      setIsLoading(true)
+      const [achievementList, analytics, dashboard] = await Promise.all([
+        achievementService.getAll(),
+        progressService.getAnalytics(),
+        progressService.getDashboardData(),
+      ])
+      if (cancelled) return
+      setAchievements(achievementList)
+      setTotals(analytics.totals)
+      setXp(dashboard.progress.xp)
+      setIsLoading(false)
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const stats = [
+    { label: 'Words Learned', value: String(totals?.totalWords ?? 0), icon: BookOpen },
+    { label: 'Avg Quiz Score', value: `${totals?.avgQuizScore ?? 0}%`, icon: Target },
+    { label: 'Quizzes Done', value: String(totals?.quizzesTaken ?? 0), icon: Trophy },
+    { label: 'Day Streak', value: String(totals?.currentStreak ?? user?.streak ?? 0), icon: Flame },
+  ]
 
   return (
     <motion.div
@@ -35,11 +61,11 @@ export default function ProfilePage() {
               <Badge variant="primary">{user?.level ?? 'B1'} Intermediate</Badge>
               <Badge variant="outline">
                 <Zap className="h-3 w-3 mr-1" />
-                {MOCK_PROGRESS.xp.toLocaleString()} XP
+                {xp.toLocaleString()} XP
               </Badge>
               <Badge variant="warning">
                 <Flame className="h-3 w-3 mr-1" />
-                {user?.streak ?? 7} day streak
+                {totals?.currentStreak ?? user?.streak ?? 0} day streak
               </Badge>
             </div>
           </div>
@@ -53,26 +79,37 @@ export default function ProfilePage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <Card key={stat.label} padding="md" className="text-center">
-              <Icon className="mx-auto mb-2 h-6 w-6 text-primary-500" aria-hidden="true" />
-              <p className="text-heading-3 text-text-primary dark:text-slate-100">{stat.value}</p>
-              <p className="text-caption text-text-muted dark:text-slate-500">{stat.label}</p>
-            </Card>
-          )
-        })}
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
+        ) : (
+          stats.map((stat) => {
+            const Icon = stat.icon
+            return (
+              <Card key={stat.label} padding="md" className="text-center">
+                <Icon className="mx-auto mb-2 h-6 w-6 text-primary-500" aria-hidden="true" />
+                <p className="text-heading-3 text-text-primary dark:text-slate-100">{stat.value}</p>
+                <p className="text-caption text-text-muted dark:text-slate-500">{stat.label}</p>
+              </Card>
+            )
+          })
+        )}
       </div>
 
       {/* Achievements */}
       <Card padding="lg">
         <div className="mb-4 flex items-center justify-between">
           <Heading level="h3">Achievements</Heading>
-          <Badge variant="primary">{MOCK_ACHIEVEMENTS.filter((a) => a.unlocked).length} / {MOCK_ACHIEVEMENTS.length}</Badge>
+          <Badge variant="primary">{achievements.filter((a) => a.unlocked).length} / {achievements.length}</Badge>
         </div>
+        {isLoading ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+          </div>
+        ) : achievements.length === 0 ? (
+          <p className="text-body-sm text-text-secondary dark:text-slate-400">No achievements available yet.</p>
+        ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {MOCK_ACHIEVEMENTS.slice(0, 10).map((a, i) => (
+          {achievements.slice(0, 10).map((a, i) => (
             <motion.div
               key={a.id}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -96,6 +133,7 @@ export default function ProfilePage() {
             </motion.div>
           ))}
         </div>
+        )}
       </Card>
 
       {/* Learning goal */}

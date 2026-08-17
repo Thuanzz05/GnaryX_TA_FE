@@ -1,40 +1,62 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { CEFRProgress, WordsLearnedChart } from '@/components/progress'
-import { StatCard } from '@/components/common'
+import { Skeleton, StatCard } from '@/components/common'
+import { progressService } from '@/services/progressService'
 import type { DashboardStat } from '@/types'
 
-const stats: DashboardStat[] = [
-  {
-    id: 'total-words',
-    label: 'Total Words',
-    value: '1,248',
-    icon: 'book',
-    trend: { value: '+5% this week', direction: 'up' },
-  },
-  {
-    id: 'goal-accuracy',
-    label: 'Goal Accuracy',
-    value: '92%',
-    icon: 'refresh',
-    trend: { value: '+5% this week', direction: 'up' },
-  },
-  {
-    id: 'longest-streak',
-    label: 'Longest Streak',
-    value: '14 days',
-    icon: 'flame',
-    trend: { value: 'Steady', direction: 'neutral' },
-  },
-  {
-    id: 'study-time',
-    label: 'Total Study Time',
-    value: '32h 15m',
-    icon: 'clock',
-    trend: { value: '+2h', direction: 'up' },
-  },
-]
+type Analytics = Awaited<ReturnType<typeof progressService.getAnalytics>>
 
 export default function ProgressPage() {
+  const [analytics, setAnalytics] = useState<Analytics | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      setIsLoading(true)
+      const data = await progressService.getAnalytics()
+      if (!cancelled) {
+        setAnalytics(data)
+        setIsLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const totals = analytics?.totals
+  const stats: DashboardStat[] = [
+    {
+      id: 'total-words',
+      label: 'Words Learned',
+      value: String(totals?.totalWords ?? 0),
+      icon: 'book',
+      trend: { value: 'Live', direction: 'up' },
+    },
+    {
+      id: 'avg-quiz-score',
+      label: 'Avg Quiz Score',
+      value: `${totals?.avgQuizScore ?? 0}%`,
+      icon: 'refresh',
+      trend: { value: 'Live', direction: 'neutral' },
+    },
+    {
+      id: 'current-streak',
+      label: 'Current Streak',
+      value: `${totals?.currentStreak ?? 0} days`,
+      icon: 'flame',
+      trend: { value: 'Live', direction: 'up' },
+    },
+    {
+      id: 'quizzes-taken',
+      label: 'Quizzes Taken',
+      value: String(totals?.quizzesTaken ?? 0),
+      icon: 'clock',
+      trend: { value: 'Live', direction: 'neutral' },
+    },
+  ]
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -47,14 +69,25 @@ export default function ProgressPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <StatCard key={stat.id} stat={stat} />
-        ))}
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
+        ) : (
+          stats.map((stat) => <StatCard key={stat.id} stat={stat} />)
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <WordsLearnedChart />
-        <CEFRProgress />
+        {isLoading ? (
+          <>
+            <Skeleton className="h-96 w-full" />
+            <Skeleton className="h-96 w-full" />
+          </>
+        ) : (
+          <>
+            <WordsLearnedChart data={analytics?.wordsLearnedByDay ?? []} />
+            <CEFRProgress data={analytics?.cefrProgress ?? []} />
+          </>
+        )}
       </div>
     </motion.div>
   )
