@@ -44,7 +44,7 @@ export default function LessonDetailPage() {
     try {
       const [courseData, lessonData, allWords] = await Promise.all([
         courseService.getById(courseId),
-        lessonService.getById(courseId, lessonId),
+        lessonService.getById(lessonId),
         vocabularyService.getAll(),
       ])
       if (!courseData || !lessonData) { setError('Lesson not found'); return }
