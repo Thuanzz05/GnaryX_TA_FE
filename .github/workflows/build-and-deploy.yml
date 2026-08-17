@@ -33,3 +33,9 @@ jobs:
         env:
           VITE_API_URL: https://gnaryx-ta-be.onrender.com/api
 
+      - name: Deploy to Render
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          curl --request POST \
+            --url ${{ secrets.RENDER_DEPLOY_HOOK_URL }} \
+            --header 'Content-Type: application/json'
