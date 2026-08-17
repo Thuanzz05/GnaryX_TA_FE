@@ -1,9 +1,8 @@
-import { Link } from 'react-router-dom'
 import { Menu, Moon, Search, Sun } from 'lucide-react'
 import { Button } from '@/components/common/Button'
-import { UserAvatar } from '@/components/common/UserAvatar'
 import { NotificationDropdown } from './NotificationDropdown'
 import { GlobalSearch } from './GlobalSearch'
+import { UserMenu } from './UserMenu'
 import type { User } from '@/types'
 
 interface HeaderProps {
@@ -71,13 +70,7 @@ export function Header({
             {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
-          <Link
-            to="/profile"
-            className="ml-1 rounded-full transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
-            aria-label="View profile"
-          >
-            <UserAvatar name={user.fullName} src={user.avatar} size="sm" />
-          </Link>
+          <UserMenu user={user} />
         </div>
       </div>
     </header>

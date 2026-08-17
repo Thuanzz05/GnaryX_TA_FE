@@ -195,7 +195,7 @@ export default function SettingsPage() {
           </p>
           <Button 
             variant="danger" 
-            size="sm" 
+            size="md" 
             leftIcon={<LogOut className="h-4 w-4" />}
             onClick={handleLogout}
           >
