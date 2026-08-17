@@ -198,6 +198,7 @@ export default function SettingsPage() {
             size="md" 
             leftIcon={<LogOut className="h-4 w-4" />}
             onClick={handleLogout}
+            className="text-black dark:text-white"
           >
             Sign Out
           </Button>
