@@ -49,8 +49,13 @@ export default function VocabularyPage() {
 
   const handleFavoriteToggle = async (id: string) => {
     try {
-      await vocabularyService.toggleFavorite(id)
-      loadWords()
+      const { isFavorite } = await vocabularyService.toggleFavorite(id)
+      setWords((currentWords) => {
+        const updatedWords = currentWords.map((word) => (
+          word.id === id ? { ...word, isFavorite } : word
+        ))
+        return showFavoritesOnly ? updatedWords.filter((word) => word.isFavorite) : updatedWords
+      })
     } catch {
       // Error handled silently
     }

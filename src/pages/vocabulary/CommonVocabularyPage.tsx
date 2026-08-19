@@ -34,8 +34,10 @@ export default function CommonVocabularyPage() {
   const updateQuery = (value: string) => { setQuery(value); setPage(1) }
   const updateLetter = (value: string) => { setLetter(value); setPage(1) }
   const toggleFavorite = async (id: string) => {
-    await vocabularyService.toggleFavorite(id)
-    setWords(await vocabularyService.getCommon1000())
+    const { isFavorite } = await vocabularyService.toggleFavorite(id)
+    setWords((currentWords) => currentWords.map((word) => (
+      word.id === id ? { ...word, isFavorite } : word
+    )))
   }
 
   return (
