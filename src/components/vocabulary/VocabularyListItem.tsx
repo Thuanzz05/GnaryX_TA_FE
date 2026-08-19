@@ -4,14 +4,16 @@ import { Heart, Volume2, Eye } from 'lucide-react'
 import { Badge, Button, Card, useToast } from '@/components/common'
 import { speakWord } from '@/utils/speech'
 import { cn } from '@/utils/cn'
+import { saveScrollPosition } from '@/hooks/useScrollRestoration'
 import type { VocabularyWord } from '@/types'
 
 interface VocabularyListItemProps {
   word: VocabularyWord
   onFavoriteToggle?: (id: string) => void
+  scrollStorageKey?: string
 }
 
-export function VocabularyListItem({ word, onFavoriteToggle }: VocabularyListItemProps) {
+export function VocabularyListItem({ word, onFavoriteToggle, scrollStorageKey = 'vocabulary-list-scroll' }: VocabularyListItemProps) {
   const { toast } = useToast()
   const [isFavorite, setIsFavorite] = useState(word.isFavorite)
 
@@ -90,7 +92,7 @@ export function VocabularyListItem({ word, onFavoriteToggle }: VocabularyListIte
               style={isFavorite ? { color: 'var(--color-error)', fill: 'var(--color-error)' } : undefined}
             />
           </Button>
-          <Link to={`/vocabulary/${word.id}`}>
+          <Link to={`/vocabulary/${word.id}`} onClick={() => saveScrollPosition(scrollStorageKey)}>
             <Button variant="outline" size="sm" className="shrink-0">
               <Eye className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">View</span>

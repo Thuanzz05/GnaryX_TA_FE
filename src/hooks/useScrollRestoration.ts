@@ -8,10 +8,18 @@ export function useScrollRestoration(storageKey: string, ready: boolean) {
     if (savedPosition === null) return
 
     const frame = requestAnimationFrame(() => {
-      window.scrollTo(0, Number(savedPosition))
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: Number(savedPosition), left: 0, behavior: 'auto' })
+      })
     })
+    const timeout = window.setTimeout(() => {
+      window.scrollTo({ top: Number(savedPosition), left: 0, behavior: 'auto' })
+    }, 80)
 
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.clearTimeout(timeout)
+    }
   }, [ready, storageKey])
 
   useEffect(() => {
@@ -19,4 +27,8 @@ export function useScrollRestoration(storageKey: string, ready: boolean) {
       sessionStorage.setItem(storageKey, String(window.scrollY))
     }
   }, [storageKey])
+}
+
+export function saveScrollPosition(storageKey: string) {
+  sessionStorage.setItem(storageKey, String(window.scrollY))
 }
