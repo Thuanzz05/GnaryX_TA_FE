@@ -158,7 +158,7 @@ export default function VocabularyPage() {
           >
             {words.map((word, index) => (
               <motion.div
-                key={word.id}
+                key={`${word.id}-${word.isFavorite}`}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.03 }}

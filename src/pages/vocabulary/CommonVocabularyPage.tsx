@@ -64,7 +64,7 @@ export default function CommonVocabularyPage() {
       </div>
 
       <div className="space-y-4">
-        {visibleWords.map((word) => <VocabularyListItem key={word.id} word={word} onFavoriteToggle={toggleFavorite} />)}
+        {visibleWords.map((word) => <VocabularyListItem key={`${word.id}-${word.isFavorite}`} word={word} onFavoriteToggle={toggleFavorite} />)}
       </div>
 
       <div className="flex items-center justify-between border-t border-slate-200 pt-4 dark:border-slate-700">
