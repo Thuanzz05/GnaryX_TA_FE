@@ -87,6 +87,7 @@ export function VocabularyListItem({ word, onFavoriteToggle }: VocabularyListIte
                 'h-4 w-4',
                 isFavorite && '!fill-error-500 !text-error-500',
               )}
+              style={isFavorite ? { color: 'var(--color-error)', fill: 'var(--color-error)' } : undefined}
             />
           </Button>
           <Link to={`/vocabulary/${word.id}`}>
