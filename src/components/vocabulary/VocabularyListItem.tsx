@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, Volume2, Eye } from 'lucide-react'
 import { Badge, Button, Card, useToast } from '@/components/common'
@@ -14,6 +14,10 @@ interface VocabularyListItemProps {
 export function VocabularyListItem({ word, onFavoriteToggle }: VocabularyListItemProps) {
   const { toast } = useToast()
   const [isFavorite, setIsFavorite] = useState(word.isFavorite)
+
+  useEffect(() => {
+    setIsFavorite(word.isFavorite)
+  }, [word.isFavorite])
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault()
