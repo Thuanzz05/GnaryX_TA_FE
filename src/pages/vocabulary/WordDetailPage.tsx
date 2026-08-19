@@ -26,11 +26,12 @@ export default function WordDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isFavorite, setIsFavorite] = useState(false)
   const [isLearned, setIsLearned] = useState(false)
-  const returnPath = (location.state as { returnPath?: string } | null)?.returnPath ?? '/vocabulary'
-  const hasListHistory = Boolean((location.state as { returnPath?: string } | null)?.returnPath)
+  const navigationState = location.state as { returnPath?: string } | null
+  const returnPath = navigationState?.returnPath ?? (wordId?.startsWith('common-1000-') ? '/vocabulary/common-1000' : '/vocabulary')
+  const hasListHistory = Boolean(navigationState?.returnPath)
 
   const handleBackToList = () => {
-    if (hasListHistory) {
+    if (hasListHistory || window.history.length > 1) {
       navigate(-1)
       return
     }
