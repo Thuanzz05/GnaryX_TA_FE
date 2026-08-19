@@ -8,7 +8,7 @@ const keys = {
   user: 'gnarylex-local-user',
   settings: 'gnarylex-local-settings',
   lessonProgress: 'gnarylex-local-lesson-progress',
-  flashcards: 'gnarylex-local-flashcards',
+  flashcards: 'gnarylex-local-flashcards-v2',
   quizAttempts: 'gnarylex-local-quiz-attempts',
   activities: 'gnarylex-local-activities',
 }
