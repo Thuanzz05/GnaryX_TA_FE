@@ -29,10 +29,10 @@ const iconMap = {
 }
 
 const styleMap = {
-  success: 'border-success-500/30 bg-success-50 dark:bg-success-900/20',
-  error: 'border-error-500/30 bg-error-50 dark:bg-error-900/20',
-  warning: 'border-warning-500/30 bg-warning-50 dark:bg-warning-900/20',
-  info: 'border-primary-500/30 bg-primary-50 dark:bg-primary-900/20',
+  success: 'border-success-500/60',
+  error: 'border-error-500/60',
+  warning: 'border-warning-500/60',
+  info: 'border-primary-500/60',
 }
 
 const iconColorMap = {
@@ -59,8 +59,8 @@ function ToastItem({
       exit={{ opacity: 0, x: 60, scale: 0.95 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
       className={cn(
-        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-card border p-4 shadow-card-hover',
-        'bg-surface-light dark:bg-surface-card-dark',
+        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-card border p-4 shadow-xl',
+        'bg-white dark:bg-slate-900',
         styleMap[toast.type],
       )}
       role="alert"
