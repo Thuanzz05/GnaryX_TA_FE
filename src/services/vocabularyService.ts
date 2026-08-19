@@ -1,7 +1,7 @@
 import type { VocabularyWord, CEFRLevel, PartOfSpeech, Difficulty } from '@/types'
 import { BACKEND_MOCK_VOCABULARY } from '@/data/backendVocabulary'
 
-const STORAGE_KEY = 'gnarylex-local-vocabulary-backend-seed-v3'
+const STORAGE_KEY = 'gnarylex-local-vocabulary-backend-seed-v4'
 
 export interface VocabularyFilters {
   search?: string
