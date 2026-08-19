@@ -1,7 +1,7 @@
 import type { VocabularyWord, CEFRLevel, PartOfSpeech, Difficulty } from '@/types'
 import { BACKEND_MOCK_VOCABULARY } from '@/data/backendVocabulary'
 
-const STORAGE_KEY = 'gnarylex-local-vocabulary-backend-seed-v4'
+const STORAGE_KEY = 'gnarylex-local-vocabulary-backend-seed-v5'
 
 export interface VocabularyFilters {
   search?: string
@@ -42,6 +42,10 @@ function matchesFilters(word: VocabularyWord, filters: VocabularyFilters = {}) {
 }
 
 export const vocabularyService = {
+  async getCommon1000(): Promise<VocabularyWord[]> {
+    return [...readWords()].sort((left, right) => left.word.localeCompare(right.word)).slice(0, 1000)
+  },
+
   async getAll(filters?: VocabularyFilters): Promise<VocabularyWord[]> {
     return readWords().filter((word) => matchesFilters(word, filters))
   },

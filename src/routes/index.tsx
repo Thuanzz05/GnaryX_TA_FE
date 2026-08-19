@@ -11,6 +11,7 @@ const LearnPage = lazy(() => import('@/pages/learn/LearnPage'))
 const CourseDetailPage = lazy(() => import('@/pages/learn/CourseDetailPage'))
 const LessonDetailPage = lazy(() => import('@/pages/learn/LessonDetailPage'))
 const VocabularyPage = lazy(() => import('@/pages/vocabulary/VocabularyPage'))
+const CommonVocabularyPage = lazy(() => import('@/pages/vocabulary/CommonVocabularyPage'))
 const WordDetailPage = lazy(() => import('@/pages/vocabulary/WordDetailPage'))
 const FlashcardsPage = lazy(() => import('@/pages/flashcards/FlashcardsPage'))
 const PracticePage = lazy(() => import('@/pages/practice/PracticePage'))
@@ -92,6 +93,14 @@ export const router = createBrowserRouter([
             element: (
               <SuspenseWrapper>
                 <VocabularyPage />
+              </SuspenseWrapper>
+            ),
+          },
+          {
+            path: '/vocabulary/common-1000',
+            element: (
+              <SuspenseWrapper>
+                <CommonVocabularyPage />
               </SuspenseWrapper>
             ),
           },

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { AlertCircle, BookOpen, Search, Star } from 'lucide-react'
 import { Button, Heading, Input, SkeletonWordItem, Text } from '@/components/common'
@@ -80,6 +81,9 @@ export default function VocabularyPage() {
         <Text variant="body-sm">
           Explore and master thousands of English words.
         </Text>
+        <Link to="/vocabulary/common-1000" className="inline-block pt-2">
+          <Button variant="outline">Open 1000 Common Words</Button>
+        </Link>
       </header>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
