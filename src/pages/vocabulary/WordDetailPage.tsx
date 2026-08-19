@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   AlertCircle,
@@ -17,6 +17,8 @@ import type { VocabularyWord } from '@/types'
 
 export default function WordDetailPage() {
   const { wordId } = useParams<{ wordId: string }>()
+  const location = useLocation()
+  const navigate = useNavigate()
   const { toast } = useToast()
 
   const [word, setWord] = useState<VocabularyWord | null>(null)
@@ -24,6 +26,16 @@ export default function WordDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [isFavorite, setIsFavorite] = useState(false)
   const [isLearned, setIsLearned] = useState(false)
+  const returnPath = (location.state as { returnPath?: string } | null)?.returnPath ?? '/vocabulary'
+  const hasListHistory = Boolean((location.state as { returnPath?: string } | null)?.returnPath)
+
+  const handleBackToList = () => {
+    if (hasListHistory) {
+      navigate(-1)
+      return
+    }
+    navigate(returnPath, { replace: true })
+  }
 
   const loadWord = useCallback(async () => {
     if (!wordId) return
@@ -92,7 +104,7 @@ export default function WordDetailPage() {
         </div>
         <Heading level="h2">Word Not Found</Heading>
         <Text variant="muted">{error ?? 'The word you are looking for does not exist.'}</Text>
-        <Link to="/vocabulary"><Button>Back to Vocabulary</Button></Link>
+        <Button onClick={handleBackToList}>Back to Vocabulary</Button>
       </div>
     )
   }
@@ -104,13 +116,14 @@ export default function WordDetailPage() {
       transition={{ duration: 0.3 }}
       className="mx-auto max-w-3xl space-y-6"
     >
-      <Link
-        to="/vocabulary"
+      <button
+        type="button"
+        onClick={handleBackToList}
         className="inline-flex items-center gap-2 text-body-sm font-medium text-text-secondary transition-colors hover:text-text-primary dark:text-slate-400 dark:hover:text-slate-200"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Vocabulary
-      </Link>
+      </button>
 
       {/* Word header card */}
       <Card padding="lg" className="border-t-4" style={{ borderTopColor: '#6366f1' }}>
