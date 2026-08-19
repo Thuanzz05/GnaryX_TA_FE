@@ -1,13 +1,10 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { ToastProvider } from '@/components/common'
-import { AuthLayout, AppLayout } from '@/components/layout'
+import { AppLayout } from '@/components/layout'
 import { AuthProvider } from '@/hooks/useAuth'
-import { GuestRoute, ProtectedRoute } from './guards'
+import { ProtectedRoute } from './guards'
 
-const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
-const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
-const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
 const DesignSystemPage = lazy(() => import('@/pages/DesignSystemPage'))
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
 const LearnPage = lazy(() => import('@/pages/learn/LearnPage'))
@@ -49,38 +46,8 @@ export const router = createBrowserRouter([
     element: <Navigate to="/dashboard" replace />,
   },
   {
-    element: <GuestRoute />,
-    children: [
-      {
-        element: <AuthLayout />,
-        children: [
-          {
-            path: '/login',
-            element: (
-              <SuspenseWrapper>
-                <LoginPage />
-              </SuspenseWrapper>
-            ),
-          },
-          {
-            path: '/register',
-            element: (
-              <SuspenseWrapper>
-                <RegisterPage />
-              </SuspenseWrapper>
-            ),
-          },
-          {
-            path: '/forgot-password',
-            element: (
-              <SuspenseWrapper>
-                <ForgotPasswordPage />
-              </SuspenseWrapper>
-            ),
-          },
-        ],
-      },
-    ],
+    path: '/login',
+    element: <Navigate to="/dashboard" replace />,
   },
   {
     element: <ProtectedRoute />,

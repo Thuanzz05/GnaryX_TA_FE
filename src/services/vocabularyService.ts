@@ -1,5 +1,7 @@
 import type { VocabularyWord, CEFRLevel, PartOfSpeech, Difficulty } from '@/types'
-import { api } from './api'
+import { BACKEND_MOCK_VOCABULARY } from '@/data/backendVocabulary'
+
+const STORAGE_KEY = 'gnarylex-local-vocabulary-backend-seed-v1'
 
 export interface VocabularyFilters {
   search?: string
@@ -11,54 +13,41 @@ export interface VocabularyFilters {
   favorite?: boolean
 }
 
-const mapWord = (item: any): VocabularyWord => ({
-  id: item.id,
-  word: item.word,
-  phonetic: item.phonetic || '',
-  partOfSpeech: item.part_of_speech || item.partOfSpeech || 'noun',
-  meaning: item.meaning,
-  meaningVi: item.meaning_vi || item.meaningVi || '',
-  example: item.example_text || item.example || '',
-  exampleVi: item.example_vi || item.exampleVi || '',
-  synonyms: Array.isArray(item.synonyms) ? item.synonyms : [],
-  antonyms: Array.isArray(item.antonyms) ? item.antonyms : [],
-  wordFamily: Array.isArray(item.word_family) ? item.word_family : [],
-  collocations: Array.isArray(item.collocations) ? item.collocations : [],
-  level: item.level,
-  topic: item.topic,
-  difficulty: item.difficulty,
-  isLearned: Boolean(item.is_learned ?? item.isLearned ?? false),
-  isFavorite: Boolean(item.is_favorite ?? item.isFavorite ?? false),
-})
+function readWords(): VocabularyWord[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) return JSON.parse(stored) as VocabularyWord[]
+  } catch {
+    // Fall back to bundled data when local storage is unavailable or corrupted.
+  }
+
+  return BACKEND_MOCK_VOCABULARY.map((word) => ({ ...word }))
+}
+
+function writeWords(words: VocabularyWord[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(words))
+}
+
+function matchesFilters(word: VocabularyWord, filters: VocabularyFilters = {}) {
+  const query = filters.search?.trim().toLowerCase()
+  return (
+    (!query || [word.word, word.meaning, word.meaningVi].some((value) => value.toLowerCase().includes(query))) &&
+    (!filters.level || filters.level === 'All' || word.level === filters.level) &&
+    (!filters.topic || filters.topic === 'All' || word.topic === filters.topic) &&
+    (!filters.partOfSpeech || filters.partOfSpeech === 'All' || word.partOfSpeech === filters.partOfSpeech) &&
+    (!filters.difficulty || filters.difficulty === 'All' || word.difficulty === filters.difficulty) &&
+    (!filters.learned || filters.learned === 'All' || (filters.learned === 'Learned' ? word.isLearned : !word.isLearned)) &&
+    (!filters.favorite || word.isFavorite)
+  )
+}
 
 export const vocabularyService = {
   async getAll(filters?: VocabularyFilters): Promise<VocabularyWord[]> {
-    const params = new URLSearchParams()
-
-    if (filters?.search) params.set('search', filters.search)
-    if (filters?.level && filters.level !== 'All') params.set('level', filters.level)
-    if (filters?.topic && filters.topic !== 'All') params.set('topic', filters.topic)
-    if (filters?.partOfSpeech && filters.partOfSpeech !== 'All') params.set('partOfSpeech', filters.partOfSpeech)
-    if (filters?.difficulty && filters.difficulty !== 'All') params.set('difficulty', filters.difficulty)
-    if (filters?.learned && filters.learned !== 'All') params.set('learned', filters.learned)
-    if (filters?.favorite) params.set('favorite', 'true')
-
-    try {
-      const response = await api.get(`/vocabulary${params.toString() ? `?${params.toString()}` : ''}`)
-      return (response.data || []).map(mapWord)
-    } catch {
-      return []
-    }
+    return readWords().filter((word) => matchesFilters(word, filters))
   },
 
   async getById(id: string): Promise<VocabularyWord | null> {
-    try {
-      const response = await api.get(`/vocabulary/${id}`)
-      if (!response.data) return null
-      return mapWord(response.data)
-    } catch {
-      return null
-    }
+    return readWords().find((word) => word.id === id) ?? null
   },
 
   async search(query: string): Promise<VocabularyWord[]> {
@@ -66,13 +55,20 @@ export const vocabularyService = {
   },
 
   async toggleFavorite(id: string): Promise<{ isFavorite: boolean }> {
-    const response = await api.post(`/vocabulary/${id}/toggle-favorite`)
-    return response.data
+    const words = readWords()
+    const word = words.find((item) => item.id === id)
+    if (!word) throw new Error('Word not found')
+    word.isFavorite = !word.isFavorite
+    writeWords(words)
+    return { isFavorite: word.isFavorite }
   },
 
   async markAsLearned(id: string): Promise<VocabularyWord> {
-    const word = await this.getById(id)
+    const words = readWords()
+    const word = words.find((item) => item.id === id)
     if (!word) throw new Error('Word not found')
-    return { ...word, isLearned: true }
+    word.isLearned = true
+    writeWords(words)
+    return { ...word }
   },
 }

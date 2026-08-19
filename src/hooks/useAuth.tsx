@@ -2,6 +2,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { User } from '@/types'
 import { authService } from '@/services/authService'
 
+const DEMO_USER: User = {
+  id: 'local-demo-user',
+  fullName: 'Local Learner',
+  email: 'demo@gnarylex.local',
+  level: 'A2',
+  xp: 400,
+  levelNumber: 2,
+  streak: 2,
+  dailyGoal: 15,
+  preferredTopics: ['Travel'],
+}
+
 interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
@@ -24,10 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    authService
-      .getCurrentUser()
-      .then(setUser)
-      .finally(() => setIsLoading(false))
+    setUser(DEMO_USER)
+    setIsLoading(false)
   }, [])
 
   const login = useCallback(async (email: string, password: string, rememberMe = false) => {
@@ -54,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     authService.logout()
-    setUser(null)
+    setUser(DEMO_USER)
   }, [])
 
   const value = useMemo(
