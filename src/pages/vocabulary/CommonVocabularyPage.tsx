@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Search } from 'lucide-react'
 import { Button, Heading, Input, Text } from '@/components/common'
 import { VocabularyListItem } from '@/components/vocabulary'
 import { vocabularyService } from '@/services/vocabularyService'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import type { VocabularyWord } from '@/types'
 
 const PAGE_SIZE = 50
@@ -18,6 +19,8 @@ export default function CommonVocabularyPage() {
   useEffect(() => {
     vocabularyService.getCommon1000().then(setWords)
   }, [])
+
+  useScrollRestoration('common-vocabulary-scroll', words.length > 0)
 
   const filteredWords = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()

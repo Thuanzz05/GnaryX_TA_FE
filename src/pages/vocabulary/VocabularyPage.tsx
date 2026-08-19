@@ -5,6 +5,7 @@ import { AlertCircle, BookOpen, Search, Star } from 'lucide-react'
 import { Button, Heading, Input, SkeletonWordItem, Text } from '@/components/common'
 import { VocabularyFilters, VocabularyListItem } from '@/components/vocabulary'
 import { vocabularyService, type VocabularyFilters as Filters } from '@/services/vocabularyService'
+import { useScrollRestoration } from '@/hooks/useScrollRestoration'
 import type { CEFRLevel, PartOfSpeech, Difficulty, VocabularyWord } from '@/types'
 
 export default function VocabularyPage() {
@@ -42,6 +43,8 @@ export default function VocabularyPage() {
   useEffect(() => {
     loadWords()
   }, [loadWords])
+
+  useScrollRestoration('vocabulary-list-scroll', !isLoading && words.length > 0)
 
   const handleFilterChange = (newFilters: Partial<Filters>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }))
