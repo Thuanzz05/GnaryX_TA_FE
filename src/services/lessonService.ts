@@ -1,37 +1,20 @@
 import type { Lesson } from '@/types'
-import { api } from './api'
+import { MOCK_LESSONS } from '@/data/mockCourses'
+import { localData } from './localData'
 
 export const lessonService = {
   async getByCourseId(courseId: string): Promise<Lesson[]> {
-    try {
-      const response = await api.get<any>(`/courses/${courseId}`)
-      return response.data?.lessons || []
-    } catch (error) {
-      console.error('Failed to fetch lessons:', error)
-      return []
-    }
+    return localData.getLessons(courseId)
   },
 
   async getById(lessonId: string): Promise<Lesson | null> {
-    try {
-      const response = await api.get<any>(`/lessons/${lessonId}`)
-      return response.data || null
-    } catch (error) {
-      console.error('Failed to fetch lesson:', error)
-      return null
-    }
+    return Object.values(MOCK_LESSONS).flat().find((lesson) => lesson.id === lessonId) ?? null
   },
 
   async updateProgress(lessonId: string, progress: number, status: string) {
-    try {
-      const response = await api.post(`/lessons/${lessonId}/progress`, {
-        progress,
-        status,
-      })
-      return response.data
-    } catch (error) {
-      console.error('Failed to update lesson progress:', error)
-      return null
-    }
+    const values = localData.read<Record<string, { progress: number; status: string }>>('gnarylex-local-lesson-progress', {})
+    values[lessonId] = { progress, status }
+    localData.write('gnarylex-local-lesson-progress', values)
+    return values[lessonId]
   },
 }
